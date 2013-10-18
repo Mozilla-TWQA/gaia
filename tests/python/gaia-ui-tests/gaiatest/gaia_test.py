@@ -450,7 +450,12 @@ class GaiaTestCase(MarionetteTestCase):
         from gaiatest.apps.keyboard.app import Keyboard
         self.keyboard = Keyboard(self.marionette)
 
-        self.cleanUp()
+        #TODO: Done. Temporarily replace cleanUp with home button.
+        #self.cleanUp()
+        self.lockscreen.unlock()
+        self.data_layer.set_setting("keyboard.ftu.enabled", False)
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
 
     def cleanUp(self):
         # remove media

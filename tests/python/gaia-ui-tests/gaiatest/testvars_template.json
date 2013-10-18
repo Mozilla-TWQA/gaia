@@ -1,14 +1,16 @@
 {
+  "skip_warning": true,
+  "acknowledged_risks": true,
   "settings": {},
   "carrier":{
-    "phone_number": "",
-    "country": "",
-    "network": ""
+    "phone_number": "0958028053",
+    "country": "Taiwan",
+    "network": "Taiwan Mobile"
   },
-  "imei": "",
-  "remote_phone_number": "",
+  "imei": "013498000490046",
+  "remote_phone_number": "0956222967",
   "wifi": {
-    "ssid": ""
+    "ssid": "Mozilla Guest"
   },
   "email": {
     "gmail": {
