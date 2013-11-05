@@ -33,7 +33,7 @@ class Camera(Base):
         self.wait_for_camera_ready()
 
     def take_photo(self):
-        self.tap_capture()
+        self.tap_camera_capture()
 
         # Wait for filmstrip to appear
         self.wait_for_filmstrip_visible()
@@ -46,18 +46,28 @@ class Camera(Base):
 
     def record_video(self, duration):
         # Start recording
-        self.tap_capture()
+        self.tap_video_capture()
         self.wait_for_element_present(*self._video_capturing_locator)
         # Wait for duration
         timer_text = "00:%02d" % duration
         self.wait_for_condition(lambda m: m.find_element(
             *self._video_timer_locator).text == timer_text, timeout=duration + 30)
         # Stop recording
-        self.tap_capture()
+        self.tap_video_capture()
         self.wait_for_element_not_displayed(*self._video_timer_locator)
 
-    def tap_capture(self):
+    def tap_camera_capture(self):
         self.wait_for_camera_ready()
+        image = self.marionette.find_element('css selector', '#capture-button span').value_of_css_property('background-image')
+        if image != u'url("app://camera.gaiamobile.org/style/images/camera.png")':
+            self.tap_switch_source()
+        self.marionette.find_element(*self._capture_button_locator).tap()
+
+    def tap_video_capture(self):
+        self.wait_for_camera_ready()
+        image = self.marionette.find_element('css selector', '#capture-button span').value_of_css_property('background-image')
+        if image != u'url("app://camera.gaiamobile.org/style/images/video.png")':
+            self.tap_switch_source()
         self.marionette.find_element(*self._capture_button_locator).tap()
 
     def tap_select_button(self):

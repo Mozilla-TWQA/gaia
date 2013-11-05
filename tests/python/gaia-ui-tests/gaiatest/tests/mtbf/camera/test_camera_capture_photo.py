@@ -28,8 +28,6 @@ class TestCamera(GaiaTestCase):
         image_preview = self.camera.filmstrip_images[0].tap()
         self.assertTrue(image_preview.is_image_preview_visible)
 
-        import pdb; pdb.set_trace()
-
     # this tearDown() is made for MTBF test.
     def tearDown(self):
         self.marionette.find_element('id', 'camera-button').tap()
