@@ -825,3 +825,56 @@ class GaiaEnduranceTestCase(GaiaTestCase):
         suite_summary_file = open(suite_summary_file_name, 'a')
         suite_summary_file.write('%s: %s\n' % (self.test_method.__name__, avg_rss))
         suite_summary_file.close()
+
+
+class GaiaMtbfTestCase(GaiaTestCase):
+
+    def __init__(self, *args, **kwargs):
+        GaiaTestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        try:
+            MarionetteTestCase.setUp(self)
+        except InvalidResponseException:
+            if self.restart:
+                pass
+
+        self.device = GaiaDevice(self.marionette, self.testvars)
+        if self.restart and (self.device.is_android_build or self.marionette.instance):
+            self.device.stop_b2g()
+            if self.device.is_android_build:
+                # revert device to a clean state
+                self.device.manager.removeDir('/data/local/storage/persistent')
+                self.device.manager.removeDir('/data/b2g/mozilla')
+            self.device.start_b2g()
+
+        # the emulator can be really slow!
+        self.marionette.set_script_timeout(self._script_timeout)
+        self.marionette.set_search_timeout(self._search_timeout)
+        self.lockscreen = LockScreen(self.marionette)
+        self.apps = GaiaApps(self.marionette)
+        self.data_layer = GaiaData(self.marionette, self.testvars)
+        from gaiatest.apps.keyboard.app import Keyboard
+        self.keyboard = Keyboard(self.marionette)
+
+        # unlock screen and go back to home screen
+        self.lockscreen.unlock()
+        self.data_layer.set_setting("keyboard.ftu.enabled", False)
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+
+    #TODO: This need to be modified to slide.
+    def launch_by_touch(self, name, switch_to_frame=True, url=None, launch_timeout=None):
+        self.marionette.switch_to_frame()
+        result = self.marionette.execute_async_script("GaiaApps.launchWithName('%s')" % name, script_timeout=launch_timeout)
+        assert result, "Failed to launch app with name '%s'" % name
+        app = GaiaApp(frame=result.get('frame'),
+                      src=result.get('src'),
+                      name=result.get('name'),
+                      origin=result.get('origin'))
+        if app.frame_id is None:
+            raise Exception("App failed to launch; there is no app frame")
+        if switch_to_frame:
+            self.switch_to_frame(app.frame_id, url)
+        return app
+
