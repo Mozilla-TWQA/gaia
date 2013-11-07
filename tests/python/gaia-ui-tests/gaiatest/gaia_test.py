@@ -4,6 +4,7 @@
 
 import json
 import os
+import re
 import sys
 import time
 
@@ -863,18 +864,30 @@ class GaiaMtbfTestCase(GaiaTestCase):
         self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
         self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
 
-    #TODO: This need to be modified to slide.
     def launch_by_touch(self, name, switch_to_frame=True, url=None, launch_timeout=None):
         self.marionette.switch_to_frame()
-        result = self.marionette.execute_async_script("GaiaApps.launchWithName('%s')" % name, script_timeout=launch_timeout)
-        assert result, "Failed to launch app with name '%s'" % name
-        app = GaiaApp(frame=result.get('frame'),
-                      src=result.get('src'),
-                      name=result.get('name'),
-                      origin=result.get('origin'))
-        if app.frame_id is None:
-            raise Exception("App failed to launch; there is no app frame")
+
+        from gaiatest.apps.homescreen.app import Homescreen
+        homescreen = Homescreen(self.marionette)
+        homescreen.switch_to_homescreen_frame()  
+ 
+        icon = self.marionette.find_element('css selector', 'li[aria-label="' + name + '"]')
+        while not icon.is_displayed() and homescreen.homescreen_has_more_pages:
+            homescreen.go_to_next_page()
+
+        while not icon.is_displayed() and self.marionette.execute_script("""var pageHelper = window.wrappedJSObject.GridManager.pageHelper;return pageHelper.getCurrentPageNumber() > 0;"""):
+            self.marionette.execute_script('window.wrappedJSObject.GridManager.goToPreviousPage()')
+        icon.tap()
+
+        pt = re.compile("_|-")
+        lowered_name = pt.sub("", name).split(' ')[0].lower()
+        self.marionette.switch_to_frame()
+        app = self.marionette.find_element('css selector', "iframe[mozapp^='app://" + lowered_name + "'][mozapp$='manifest.webapp']")
+
+        iframe_id = app.get_attribute('id')
         if switch_to_frame:
-            self.switch_to_frame(app.frame_id, url)
-        return app
+            self.marionette.switch_to_frame(iframe_id)
+
+        return iframe_id
+
 
