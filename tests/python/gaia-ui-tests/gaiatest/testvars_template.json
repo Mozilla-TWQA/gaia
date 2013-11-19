@@ -1,14 +1,20 @@
 {
+  "skip_warning": true,
+  "acknowledged_risks": true,
   "settings": {},
   "carrier":{
-    "phone_number": "",
-    "country": "",
-    "network": ""
+    "phone_number": "0958028070",
+    "country": "Taiwan",
+    "network": "Taiwan Mobile"
   },
-  "imei": "",
-  "remote_phone_number": "",
+  "imei": "864899012670766",
+  "remote_phone_number": "0978725105",
   "wifi": {
-    "ssid": ""
+    "ssid": "Mozilla Guest"
+  },
+  "marketplace": {
+    "username": "",
+    "password": ""
   },
   "email": {
     "gmail": {
@@ -34,6 +40,5 @@
       "active_sync_hostname": "",
       "active_sync_username": ""
     }
-
   }
 }
