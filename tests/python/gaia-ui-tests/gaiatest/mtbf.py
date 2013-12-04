@@ -7,7 +7,6 @@ import time
 from gaiatest.runtests import GaiaTestRunner, GaiaTestOptions
 from marionette.runtests import startTestRunner
 
-
 class MTBF_Driver:
     ## time format here is seconds
     def __init__(self, time):
@@ -55,8 +54,8 @@ class MTBF_Driver:
     def time_up(self, signum, frame):
         print ("Signal handler called with signal", signum)
         self.get_report()
+        os.system("adb reboot")
         os._exit(0)
-
 
 def main():
     ## set default as 2 mins
