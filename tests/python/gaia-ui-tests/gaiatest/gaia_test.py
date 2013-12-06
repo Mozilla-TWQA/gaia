@@ -890,4 +890,7 @@ class GaiaMtbfTestCase(GaiaTestCase):
 
         return iframe_id
 
-
+    def tearDown(self):
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+        time.sleep(2)
+        MarionetteTestCase.tearDown(self)
