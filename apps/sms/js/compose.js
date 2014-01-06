@@ -247,7 +247,6 @@ var Compose = (function() {
 
     getContent: function() {
       var content = [];
-      var lastContent = 0;
       var node;
       var i;
 
@@ -255,7 +254,7 @@ var Compose = (function() {
         // hunt for an attachment in the WeakMap and append it
         var attachment = attachments.get(node);
         if (attachment) {
-          lastContent = content.push(attachment);
+          content.push(attachment);
           continue;
         }
 
@@ -276,16 +275,12 @@ var Compose = (function() {
         }
 
         // append (if possible) text to the last entry
-        if (text.length && typeof content[last] === 'string') {
-          content[last] += text;
-        } else {
-          // push even if text.length === 0, there could be a <br>
-          content.push(text);
-        }
-
-        // keep track of the last populated line
-        if (text.length > 0) {
-          lastContent = content.length;
+        if (text.length) {
+          if (typeof content[last] === 'string') {
+            content[last] += text;
+          } else {
+            content.push(text);
+          }
         }
       }
 
@@ -502,10 +497,43 @@ var Compose = (function() {
         }
 
         if (typeof requestProxy.onsuccess === 'function') {
-          requestProxy.onsuccess(new Attachment(result.blob, {
+          var originalBlob = result.blob;
+          var attachmentOptions = {
             name: result.name,
             isDraft: true
-          }));
+          };
+
+          // We ought to just be able to call the onsuccess function now.
+          // But to workaround bug 944276, if we get a blob that is not a File
+          // and is not a big image that we are going to resize we need to
+          // make a private copy of it. Otherwise, it won't work if we
+          // pass it to another activity (like the open activity of Gallery).
+          if (originalBlob instanceof File ||
+              (originalBlob.type.startsWith('image/') &&
+               Settings.mmsSizeLimitation &&
+               originalBlob.size > Settings.mmsSizeLimitation)) {
+            // Safe to call onsuccess with the original blob in this case
+            requestProxy.onsuccess(new Attachment(originalBlob,
+                                                  attachmentOptions));
+          } else {
+            // Make a local copy of the blob before calling onsuccess
+            // to workaround bug 944276.
+            var reader = new FileReader();
+            reader.onload = function() {
+              var buffer = reader.result;
+              var copyBlob = new Blob([buffer], { type: originalBlob.type });
+              requestProxy.onsuccess(new Attachment(copyBlob,
+                                                    attachmentOptions));
+            };
+            reader.onerror = function() {
+              // This should never happen, but if it does, we'll try
+              // to use the original blob for lack of any better alternative.
+              console.error('Failed to copy blob.');
+              requestProxy.onsuccess(new Attachment(originalBlob,
+                                                    attachmentOptions));
+            };
+            reader.readAsArrayBuffer(originalBlob);
+          }
         }
       };
 

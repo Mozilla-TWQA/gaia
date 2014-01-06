@@ -21,6 +21,24 @@
 #                   Gaia                                                      #
 #                                                                             #
 ###############################################################################
+#                                                                             #
+# XULrunner download and location configuration                               #
+#                                                                             #
+# USE_LOCAL_XULRUNNER_SDK  : if you have a local XULrunner installation and   #
+#                            wants to use it                                  #
+#                                                                             #
+# XULRUNNER_DIRECTORY      : if you use USE_LOCAL_XULRUNNER_SDK, this is      #
+#                            where your local XULrunner installation is       #
+#                                                                             #
+# XULRUNNER_BASE_DIRECTORY : if you don't use USE_LOCAL_XULRUNNER_SDK, this   #
+#                            is where you want the automatic XULrunner        #
+#                            download to uncompress.                          #
+#                                                                             #
+# Submakes will get XULRUNNER_DIRECTORY, XULRUNNERSDK and XPCSHELLSDK as      #
+# absolute paths.                                                             #
+#                                                                             #
+###############################################################################
+
 -include local.mk
 
 # .b2g.mk recorded the make flags from Android.mk
@@ -64,6 +82,9 @@ PROFILE_FOLDER?=profile-debug
 endif
 
 PROFILE_FOLDER?=profile
+
+STAGE_FOLDER?=build_stage
+export STAGE_FOLDER
 
 LOCAL_DOMAINS?=1
 
@@ -369,35 +390,58 @@ ifneq ($(DEBUG),1)
 endif
 endif
 
-app-makefiles:
+.PHONY: app-makefiles
+# Applications may want to perform their own build steps.  (For example, the
+# clock and e-mail apps use r.js to perform optimization steps.)  These steps
+# may produce the following output consumed by other tooling:
+# - build_stage/APPNAME/*: This is where the build output goes.
+#   build/webapp-zip.js knows about this directory.
+# - build_stage/APPNAME/gaia_shared.json: This file lists shared resource
+#   dependencies that build/webapp-zip.js's detection logic might not determine
+#   because of lazy loading, etc.
+app-makefiles: install-xulrunner-sdk
 	@for d in ${GAIA_APPDIRS}; \
 	do \
 		for mfile in `find $$d -mindepth 1 -maxdepth 1 -name "Makefile"` ;\
 		do \
-			make -C `dirname $$mfile`; \
+			make -C `dirname $$mfile` || exit 1 ;\
 		done; \
 	done;
 
+.PHONY: webapp-manifests
 # Generate $(PROFILE_FOLDER)/webapps/
 # We duplicate manifest.webapp to manifest.webapp and manifest.json
 # to accommodate Gecko builds without bug 757613. Should be removed someday.
-webapp-manifests: install-xulrunner-sdk
+#
+# We depend on app-makefiles so that per-app Makefiles could modify the manifest
+# as part of their build step.  None currently do this, and webapp-manifests.js
+# would likely want to change to see if the build directory includes a manifest
+# in that case.  Right now this is just making sure we don't race app-makefiles
+# in case someone does decide to get fancy.
+webapp-manifests: app-makefiles install-xulrunner-sdk
 	@mkdir -p $(PROFILE_FOLDER)/webapps
 	@$(call run-js-command, webapp-manifests)
 	@#cat $(PROFILE_FOLDER)/webapps/webapps.json
 
+.PHONY: webapp-zip
 # Generate $(PROFILE_FOLDER)/webapps/APP/application.zip
-webapp-zip: webapp-optimize install-xulrunner-sdk
+webapp-zip: webapp-manifests webapp-optimize app-makefiles install-xulrunner-sdk
 ifneq ($(DEBUG),1)
 	@mkdir -p $(PROFILE_FOLDER)/webapps
 	@$(call run-js-command, webapp-zip)
 endif
 
+.PHONY: webapp-optimize
 # Web app optimization steps (like precompling l10n, concatenating js files, etc..).
-webapp-optimize: install-xulrunner-sdk
+# You need xulrunner (install-xulrunner-sdk) to do this, and you need the app
+# to have been built (app-makefiles).
+webapp-optimize: app-makefiles install-xulrunner-sdk
 	@$(call run-js-command, webapp-optimize)
 
-# Remove temporary l10n files
+.PHONY: optimize-clean
+# Remove temporary l10n files created by the webapp-optimize step.  Because
+# webapp-zip wants these files to still be around during the zip stage, depend
+# on webapp-zip so it runs to completion before we start the cleanup.
 optimize-clean: webapp-zip install-xulrunner-sdk
 	@$(call run-js-command, optimize-clean)
 
@@ -457,7 +501,12 @@ reference-workload-x-heavy:
 
 # The install-xulrunner target arranges to get xulrunner downloaded and sets up
 # some commands for invoking it. But it is platform dependent
+# IMPORTANT: you should generally change the directory name when you change the
+# URL unless you know what you're doing
 XULRUNNER_SDK_URL=http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2013/08/2013-08-07-03-02-16-mozilla-central/xulrunner-26.0a1.en-US.
+XULRUNNER_BASE_DIRECTORY?=xulrunner-sdk-26
+XULRUNNER_DIRECTORY?=$(XULRUNNER_BASE_DIRECTORY)/xulrunner-sdk
+XULRUNNER_URL_FILE=$(XULRUNNER_BASE_DIRECTORY)/.url
 
 ifeq ($(SYS),Darwin)
 # For mac we have the xulrunner-sdk so check for this directory
@@ -470,14 +519,14 @@ else
 # 64-bit
 XULRUNNER_SDK_DOWNLOAD=$(XULRUNNER_MAC_SDK_URL)x86_64.sdk.tar.bz2
 endif
-XULRUNNERSDK=./xulrunner-sdk/bin/XUL.framework/Versions/Current/run-mozilla.sh
-XPCSHELLSDK=./xulrunner-sdk/bin/XUL.framework/Versions/Current/xpcshell
+XULRUNNERSDK=$(abspath $(XULRUNNER_DIRECTORY)/bin/XUL.framework/Versions/Current/run-mozilla.sh)
+XPCSHELLSDK=$(abspath $(XULRUNNER_DIRECTORY)/bin/XUL.framework/Versions/Current/xpcshell)
 
 else ifeq ($(findstring MINGW32,$(SYS)), MINGW32)
 # For windows we only have one binary
 XULRUNNER_SDK_DOWNLOAD=$(XULRUNNER_SDK_URL)win32.sdk.zip
 XULRUNNERSDK=
-XPCSHELLSDK=./xulrunner-sdk/bin/xpcshell
+XPCSHELLSDK=$(abspath $(XULRUNNER_DIRECTORY)/bin/xpcshell)
 
 else
 # Otherwise, assume linux
@@ -489,9 +538,14 @@ XULRUNNER_SDK_DOWNLOAD=$(XULRUNNER_LINUX_SDK_URL)x86_64.sdk.tar.bz2
 else
 XULRUNNER_SDK_DOWNLOAD=$(XULRUNNER_LINUX_SDK_URL)i686.sdk.tar.bz2
 endif
-XULRUNNERSDK=./xulrunner-sdk/bin/run-mozilla.sh
-XPCSHELLSDK=./xulrunner-sdk/bin/xpcshell
+XULRUNNERSDK=$(abspath $(XULRUNNER_DIRECTORY)/bin/run-mozilla.sh)
+XPCSHELLSDK=$(abspath $(XULRUNNER_DIRECTORY)/bin/xpcshell)
 endif
+
+# It's difficult to figure out XULRUNNERSDK in subprocesses; it's complex and
+# some builders may want to override our find logic (ex: TBPL).
+# So let's export these variables to external processes.
+export XULRUNNER_DIRECTORY XULRUNNERSDK XPCSHELLSDK
 
 .PHONY: build-config-js
 build-config-js:
@@ -499,17 +553,26 @@ build-config-js:
 
 .PHONY: install-xulrunner-sdk
 install-xulrunner-sdk: build-config-js
+	@echo "XULrunner directory: $(XULRUNNER_DIRECTORY)"
 ifndef USE_LOCAL_XULRUNNER_SDK
-ifneq ($(XULRUNNER_SDK_DOWNLOAD),$(shell cat .xulrunner-url 2> /dev/null))
-	rm -rf xulrunner-sdk
+ifneq ($(XULRUNNER_SDK_DOWNLOAD),$(shell test -d $(XULRUNNER_DIRECTORY) && cat $(XULRUNNER_URL_FILE) 2> /dev/null))
+# must download the xulrunner sdk
+	rm -rf $(XULRUNNER_BASE_DIRECTORY)
+	@echo "Downloading XULRunner..."
 	$(DOWNLOAD_CMD) $(XULRUNNER_SDK_DOWNLOAD)
 ifeq ($(findstring MINGW32,$(SYS)), MINGW32)
-	unzip xulrunner*.zip && rm xulrunner*.zip
+	mkdir "$(XULRUNNER_BASE_DIRECTORY)"
+	@echo "Unzipping XULRunner..."
+	unzip -q xulrunner*.zip -d "$(XULRUNNER_BASE_DIRECTORY)" && rm -f xulrunner*.zip
 else
-	tar xjf xulrunner*.tar.bz2 && rm xulrunner*.tar.bz2
-endif
-	@echo $(XULRUNNER_SDK_DOWNLOAD) > .xulrunner-url
-endif
+	mkdir $(XULRUNNER_BASE_DIRECTORY)
+	tar xjf xulrunner*.tar.bz2 -C $(XULRUNNER_BASE_DIRECTORY) && rm -f xulrunner*.tar.bz2 || \
+		( echo; \
+		echo "We failed extracting the XULRunner SDK archive which may be corrupted."; \
+		echo "You should run 'make really-clean' and try again." ; false )
+endif # MINGW32
+	@echo $(XULRUNNER_SDK_DOWNLOAD) > $(XULRUNNER_URL_FILE)
+endif # XULRUNNER_SDK_DOWNLOAD
 endif # USE_LOCAL_XULRUNNER_SDK
 
 define run-js-command
@@ -887,11 +950,11 @@ endif
 
 # clean out build products
 clean:
-	rm -rf profile profile-debug profile-test $(PROFILE_FOLDER)
+	rm -rf profile profile-debug profile-test $(PROFILE_FOLDER) $(STAGE_FOLDER)
 
 # clean out build products
 really-clean: clean
-	rm -rf xulrunner-sdk .xulrunner-url
+	rm -rf xulrunner-* .xulrunner-*
 
 .PHONY: install-git-hook
 install-git-hook:

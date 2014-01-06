@@ -37,7 +37,8 @@
  * and keyboard.enabled-layouts, and update the ObservableArrays.
  */
 var KeyboardContext = (function() {
-  var _layoutDict = null; // stores layout indexed by appOrigin and layoutId
+  // stores layout indexed by app manifestURL and layoutId
+  var _layoutDict = null;
 
   var _keyboards = ObservableArray([]);
   var _enabledLayouts = ObservableArray([]);
@@ -60,7 +61,7 @@ var KeyboardContext = (function() {
   };
 
   var Layout =
-    function(id, appName, appOrigin, name, description, types, enabled) {
+    function(id, appName, appManifestURL, name, description, types, enabled) {
       var _observable = Observable({
         id: id,
         appName: appName,
@@ -73,7 +74,7 @@ var KeyboardContext = (function() {
       // Layout enabled changed.
       _observable.observe('enabled', function(newValue, oldValue) {
         if (!_parsingApps) {
-          KeyboardHelper.setLayoutEnabled(appOrigin, id, newValue);
+          KeyboardHelper.setLayoutEnabled(appManifestURL, id, newValue);
           // only check the defaults if we disabled a checkbox
           if (!newValue) {
             KeyboardHelper.checkDefaults(notifyDefaultEnabled);
@@ -94,17 +95,18 @@ var KeyboardContext = (function() {
 
   function updateLayouts(layouts, reason) {
     function mapLayout(layout) {
-      var app = _layoutDict[layout.app.origin];
+      var app = _layoutDict[layout.app.manifestURL];
       if (!app) {
-        app = _layoutDict[layout.app.origin] = {};
+        app = _layoutDict[layout.app.manifestURL] = {};
       }
       if (app[layout.layoutId]) {
         app[layout.layoutId].enabled = layout.enabled;
         return app[layout.layoutId];
       }
       return app[layout.layoutId] = Layout(layout.layoutId,
-        layout.manifest.name, layout.app.origin, layout.entryPoint.name,
-        layout.entryPoint.description, layout.entryPoint.types, layout.enabled);
+        layout.manifest.name, layout.app.manifestURL, layout.inputManifest.name,
+        layout.inputManifest.description, layout.inputManifest.types,
+        layout.enabled);
     }
 
     function reduceApps(carry, layout) {
@@ -158,12 +160,12 @@ var KeyboardContext = (function() {
       _keyboards.forEach(function(keyboard) {
         var keyboardAppInstance = keyboard.app;
         var keyboardManifest = new ManifestHelper(keyboardAppInstance.manifest);
-        var entryPoints = keyboardManifest.entry_points;
+        var inputs = keyboardManifest.inputs;
         keyboard.name = keyboardManifest.name;
         keyboard.description = keyboardManifest.description;
         keyboard.layouts.forEach(function(layout) {
           var key = layout.id;
-          var layoutInstance = entryPoints[key];
+          var layoutInstance = inputs[key];
           layout.appName = keyboardManifest.name;
           layout.name = layoutInstance.name;
           layout.description = layoutInstance.description;
@@ -431,14 +433,14 @@ var DefaultKeyboardEnabledDialog = (function() {
       'mustHaveOneKeyboard',
       {
         type: l10n.get('keyboardType-' +
-          layout.entryPoint.types.sort()[0])
+          layout.inputManifest.types.sort()[0])
       }
     );
     l10n.localize(
       document.getElementById('keyboard-default-text'),
       'defaultKeyboardEnabled',
       {
-        layoutName: layout.entryPoint.name,
+        layoutName: layout.inputManifest.name,
         appName: layout.manifest.name
       }
     );

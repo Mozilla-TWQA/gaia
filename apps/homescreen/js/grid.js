@@ -16,7 +16,10 @@ var GridManager = (function() {
   var BASE_HEIGHT = 460; // 480 - 20 (status bar height)
   var DEVICE_HEIGHT = window.innerHeight;
   var OPACITY_STEPS = 40; // opacity steps between [0,1]
-  var HIDDEN_ROLES = ['system', 'keyboard', 'homescreen'];
+  var HIDDEN_ROLES = ['system', 'input', 'homescreen'];
+
+  // Store the pending apps to be installed until SingleVariant conf is loaded
+  var pendingInstallRequests = [];
 
   function isHiddenApp(role) {
     if (!role) {
@@ -365,14 +368,13 @@ var GridManager = (function() {
           };
         }
 
-        var container = pages[currentPage].container;
-        container.addEventListener(touchmove, pan, true);
+        window.addEventListener(touchmove, pan, true);
 
         removePanHandler = function removePanHandler(e) {
           touchEndTimestamp = e ? e.timeStamp : Number.MAX_VALUE;
           window.removeEventListener(touchend, removePanHandler, true);
 
-          container.removeEventListener(touchmove, pan, true);
+          window.removeEventListener(touchmove, pan, true);
 
           window.mozRequestAnimationFrame(function panTouchEnd() {
             onTouchEnd(deltaX, e);
@@ -525,8 +527,8 @@ var GridManager = (function() {
     current.MozTransition = '';
     current.MozTransform = 'translateX(0)';
 
-    delete fromPage.container.dataset.currentPage;
-    toPage.container.dataset.currentPage = 'true';
+    fromPage.container.setAttribute('aria-hidden', true);
+    toPage.container.removeAttribute('aria-hidden');
 
     togglePagesVisibility(index - 1, index + 1);
 
@@ -944,6 +946,13 @@ var GridManager = (function() {
     panningResolver = createPanningResolver();
   }
 
+  function addSVEventListener() {
+    window.addEventListener('singlevariant-ready', function svFileReady(ev) {
+      window.removeEventListener('singlevariant-ready', svFileReady);
+      pendingInstallRequests.forEach(GridManager.install);
+    });
+  }
+
   /*
    * Initialize the mozApps event handlers and synchronize our grid
    * state with the applications known to the system.
@@ -952,7 +961,11 @@ var GridManager = (function() {
     var appMgr = navigator.mozApps.mgmt;
 
     appMgr.oninstall = function oninstall(event) {
-     GridManager.install(event.application);
+      if (Configurator.isSingleVariantReady) {
+        GridManager.install(event.application);
+      } else {
+        pendingInstallRequests.push(event.application);
+      }
     };
     appMgr.onuninstall = function onuninstall(event) {
       GridManager.uninstall(event.application);
@@ -1072,6 +1085,21 @@ var GridManager = (function() {
     return manifest.appcache_path != null;
   }
 
+  /*
+   * Add the manifest to the array of installed singlevariant apps
+   * @param {string} app's manifest to add
+   */
+  function addPreviouslyInstalled(manifest) {
+    if (!isPreviouslyInstalled(manifest)) {
+      svPreviouslyInstalledApps.push({'manifest': manifest});
+    }
+  }
+
+  /*
+   * Return true if manifest is in the array of installed singleVariant apps,
+   * false otherwise
+   * @param {string} app's manifest consulted
+   */
   function isPreviouslyInstalled(manifest) {
     for (var i = 0, elemNum = svPreviouslyInstalledApps.length;
          i < elemNum; i++) {
@@ -1182,15 +1210,23 @@ var GridManager = (function() {
       if (!Configurator.isSimPresentOnFirstBoot && index < pages.length &&
           !pages[index].hasEmptySlot()) {
         index = getFirstPageWithEmptySpace(index);
+      } else {
+        icon.descriptor.desiredScreen = index;
       }
     } else {
       index = getFirstPageWithEmptySpace();
     }
 
-    if (index < pages.length) {
-      pages[index].appendIcon(icon);
-    } else {
-      pageHelper.addPage([icon]);
+    var iconLst = [icon];
+    while (iconLst.length > 0) {
+      icon = iconLst.shift();
+      index = icon.descriptor.desiredScreen || index;
+      if (index < pages.length) {
+        iconLst = iconLst.concat(pages[index].getMisplacedIcons(index));
+        pages[index].appendIcon(icon);
+      } else {
+        pageHelper.addPage([icon]);
+      }
     }
 
     markDirtyState();
@@ -1355,6 +1391,8 @@ var GridManager = (function() {
     hiddenRoles: HIDDEN_ROLES,
 
     svPreviouslyInstalledApps: svPreviouslyInstalledApps,
+    isPreviouslyInstalled: isPreviouslyInstalled,
+    addPreviouslyInstalled: addPreviouslyInstalled,
 
     /*
      * Initializes the grid manager
@@ -1365,6 +1403,10 @@ var GridManager = (function() {
      *
      */
     init: function gm_init(options, callback) {
+      // Add listener which will alert us when the SingleVariant configuration
+      // file has been read
+      addSVEventListener();
+
       // Populate defaults
       for (var key in defaults) {
         if (typeof options[key] === 'undefined') {

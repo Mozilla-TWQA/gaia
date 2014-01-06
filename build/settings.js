@@ -134,7 +134,6 @@ function execute() {
    'debug.console.enabled': false,
    'debug.grid.enabled': false,
    'debug.oop.disabled': false,
-   'debug.keyboard-oop.enabled': false,
    'debug.fps.enabled': false,
    'debug.ttl.enabled': false,
    'debug.log-animations.enabled': false,
@@ -160,36 +159,16 @@ function execute() {
    'icc.data': null,
    'icc.displayTextTimeout': 40000,
    'icc.inputTextTimeout': 40000,
+   'icc.toneDefaultTimeout': 5000,
    'icc.goBackTimeout': 1000,
    'icc.selectTimeout': 150000,
-   'keyboard.layouts.english': true,
-   'keyboard.layouts.dvorak': false,
-   'keyboard.layouts.czech': false,
-   'keyboard.layouts.french': false,
-   'keyboard.layouts.german': false,
-   'keyboard.layouts.hungarian': false,
-   'keyboard.layouts.norwegian': false,
-   'keyboard.layouts.slovak': false,
-   'keyboard.layouts.turkish': false,
-   'keyboard.layouts.romanian': false,
-   'keyboard.layouts.russian': false,
-   'keyboard.layouts.arabic': false,
-   'keyboard.layouts.hebrew': false,
-   'keyboard.layouts.zhuyin': false,
-   'keyboard.layouts.pinyin': false,
-   'keyboard.layouts.greek': false,
-   'keyboard.layouts.japanese': false,
-   'keyboard.layouts.polish': false,
-   'keyboard.layouts.portuguese': false,
-   'keyboard.layouts.serbian': false,
-   'keyboard.layouts.spanish': false,
-   'keyboard.layouts.catalan': false,
    'keyboard.vibration': false,
    'keyboard.clicksound': false,
    'keyboard.autocorrect': true,
    'keyboard.wordsuggestion': true,
    'keyboard.current': 'en',
-   'keyboard.ftu.enabled': true,
+   'keyboard.ftu.enabled': false,
+   'keyboard.3rd-party-app.enabled': false,
    'language.current': 'en-US',
    'layers.draw-borders': false,
    'lockscreen.passcode-lock.code': '0000',
@@ -274,12 +253,12 @@ function execute() {
    'tethering.wifi.dhcpserver.startip': '192.168.1.10',
    'tethering.wifi.dhcpserver.endip': '192.168.1.30',
    'tethering.wifi.ssid': 'FirefoxHotspot',
-   'tethering.wifi.security.type': 'open',
+   'tethering.wifi.security.type': 'wpa2-psk',
    'tethering.wifi.security.password': '1234567890',
    'tethering.wifi.connectedClients': 0,
    'tethering.usb.connectedClients': 0,
    'time.clock.automatic-update.enabled': true,
-   'time.timezone.automatic-update.enabled': true, 
+   'time.timezone.automatic-update.enabled': true,
    'time.timezone': null,
    'ums.enabled': false,
    'ums.mode': 0,
@@ -313,20 +292,6 @@ function execute() {
   }
 
   settings['language.current'] = config.GAIA_DEFAULT_LOCALE;
-  let file = utils.Gaia.sharedFolder.clone();
-  file.append('resources');
-  file.append('keyboard_layouts.json');
-  let keyboard_layouts_res = utils.getJSON(file);
-  let keyboard_layouts = keyboard_layouts_res['layout'];
-  let keyboard_nonLatins = keyboard_layouts_res['nonLatin'];
-  let default_layout;
-  if (config.GAIA_DEFAULT_LOCALE in keyboard_layouts) {
-    default_layout = keyboard_layouts[config.GAIA_DEFAULT_LOCALE];
-    if (!(config.GAIA_DEFAULT_LOCALE in keyboard_nonLatins)) {
-      settings['keyboard.layouts.english'] = false;
-    }
-    settings['keyboard.layouts.' + default_layout] = true;
-  }
   settings['devtools.debugger.remote-enabled'] = config.REMOTE_DEBUGGER == true;
 
 

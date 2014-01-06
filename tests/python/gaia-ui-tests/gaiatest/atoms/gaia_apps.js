@@ -10,6 +10,13 @@ var GaiaApps = {
     return name.replace(/[- ]+/g, '').toLowerCase();
   },
 
+  getInstalledApps: function() {
+    let req = navigator.mozApps.mgmt.getAll();
+    req.onsuccess = function() {
+      marionetteScriptFinished(req.result);
+    }
+  },
+
   getRunningApps: function() {
     let runningApps = window.wrappedJSObject.WindowManager.getRunningApps();
     // Return a simplified version of the runningApps object which can be
@@ -83,34 +90,31 @@ var GaiaApps = {
       }
     }
 
-    let appsReq = navigator.mozApps.mgmt.getAll();
-    appsReq.onsuccess = function() {
-      let apps = appsReq.result;
-      let normalizedSearchName = GaiaApps.normalizeName(name);
+    let apps = window.wrappedJSObject.Applications.installedApps;
+    let normalizedSearchName = GaiaApps.normalizeName(name);
 
-      for (let i = 0; i < apps.length; i++) {
-        let app = apps[i];
-        let origin = null;
-        let entryPoints = app.manifest.entry_points;
-        if (entryPoints) {
-          for (let ep in entryPoints) {
-            let currentEntryPoint = entryPoints[ep];
-            let appName = currentEntryPoint.name;
-
-            if (normalizedSearchName === GaiaApps.normalizeName(appName)) {
-              return sendResponse(app, appName, ep);
-            }
-          }
-        } else {
-          let appName = app.manifest.name;
+    for (let manifestURL in apps) {
+      let app = apps[manifestURL];
+      let origin = null;
+      let entryPoints = app.manifest.entry_points;
+      if (entryPoints) {
+        for (let ep in entryPoints) {
+          let currentEntryPoint = entryPoints[ep];
+          let appName = currentEntryPoint.name;
 
           if (normalizedSearchName === GaiaApps.normalizeName(appName)) {
-            return sendResponse(app, appName);
+            return sendResponse(app, appName, ep);
           }
         }
+      } else {
+        let appName = app.manifest.name;
+
+        if (normalizedSearchName === GaiaApps.normalizeName(appName)) {
+          return sendResponse(app, appName);
+        }
       }
-      callback(false);
     }
+    callback(false);
   },
 
   // Returns the number of running apps.

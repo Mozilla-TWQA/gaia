@@ -8,6 +8,7 @@ ul {
   padding: 0;
   overflow: hidden;
   list-style: none;
+  background: url(images/document_bg.png);
 }
 
 ul li {
@@ -41,10 +42,12 @@ ul li > span {
   height: 6rem;
   font-size: 1.9rem;
   line-height: 6rem;
-  padding: 0 1.5rem;
+  padding: 0 3rem;
+  margin: 0 -1.5rem;
 }
 
-ul li.active,
+ul li.active a,
+ul li.active span,
 ul li:not([aria-disabled="true"]) > small + a:active,
 ul li:not([aria-disabled="true"]) > a[href]:active,
 ul li:not([aria-disabled="true"]) > small + a:focus,

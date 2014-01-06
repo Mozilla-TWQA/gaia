@@ -27,6 +27,7 @@ class Settings(Base):
     _wifi_menu_item_locator = (By.ID, 'menuItem-wifi')
     _device_info_menu_item_locator = (By.ID, 'menuItem-deviceInfo')
     _app_permissions_menu_item_locator = (By.ID, 'menuItem-appPermissions')
+    _battery_menu_item_locator = (By.ID, 'menuItem-battery')
 
     def launch(self):
         Base.launch(self)
@@ -69,6 +70,10 @@ class Settings(Base):
 
     def open_bluetooth_settings(self):
         from gaiatest.apps.settings.regions.bluetooth import Bluetooth
+        # this is technically visible, but needs scroll to be tapped
+        # TODO Remove when bug 937053 is resolved
+        bluetooth_menu_item = self.marionette.find_element(*self._bluetooth_menu_item_locator)
+        self.marionette.execute_script("arguments[0].scrollIntoView(false);", [bluetooth_menu_item])
         self._tap_menu_item(self._bluetooth_menu_item_locator)
         return Bluetooth(self.marionette)
 
@@ -116,6 +121,11 @@ class Settings(Base):
         from gaiatest.apps.settings.regions.app_permissions import AppPermissions
         self._tap_menu_item(self._app_permissions_menu_item_locator)
         return AppPermissions(self.marionette)
+
+    def open_battery_settings(self):
+        from gaiatest.apps.settings.regions.battery import Battery
+        self._tap_menu_item(self._battery_menu_item_locator)
+        return Battery(self.marionette)
 
     def _tap_menu_item(self, menu_item_locator):
         self.wait_for_element_displayed(*menu_item_locator)

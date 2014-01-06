@@ -45,7 +45,7 @@ Icon.prototype = {
   // element dataset and allow us to uniquely look up the Icon object from
   // the HTML element.
   _descriptorIdentifiers: ['manifestURL', 'entry_point', 'bookmarkURL',
-                           'useAsyncPanZoom', 'desiredPos'],
+                           'useAsyncPanZoom', 'desiredPos', 'desiredScreen'],
 
   /**
    * The Application (or Bookmark) object corresponding to this icon.
@@ -193,7 +193,7 @@ Icon.prototype = {
       icon: this,
       success: function(blob) {
         this.loadImageData(blob);
-      },
+      }.bind(this),
       error: function() {
         if (this.icon && !this.downloading &&
             this.icon.classList.contains('loading')) {
@@ -201,7 +201,7 @@ Icon.prototype = {
           this.img.src = null;
         }
         this.loadCachedIcon();
-      }
+      }.bind(this)
     });
   },
 
@@ -631,11 +631,11 @@ function Page(container, icons) {
 
 Page.prototype = {
 
-  // After launching an app we disable the page during <this time> in order to
-  // prevent multiple open-app animations
-  DISABLE_TAP_EVENT_DELAY: 600,
-
   FALLBACK_READY_EVENT_DELAY: 1000,
+
+  // After launching an app we disable the page during this time (ms)
+  // in order to prevent multiple open-app animations
+  DISABLE_TAP_EVENT_DELAY: 500,
 
   /*
    * Renders a page for a list of apps
@@ -644,6 +644,8 @@ Page.prototype = {
    *               List of Icon objects.
    */
   render: function pg_render(icons) {
+    // By default the page is hidden unless it is the current page.
+    this.container.setAttribute('aria-hidden', true);
     this.olist = document.createElement('ol');
     for (var i = 0; i < icons.length; i++) {
       this.appendIcon(icons[i]);
@@ -825,7 +827,7 @@ Page.prototype = {
           Homescreen.showAppDialog(icon.app);
       }
     } else if ('isIcon' in elem.dataset && this.olist &&
-               !this.olist.getAttribute('disabled')) {
+               !document.body.hasAttribute('disabled-tapping')) {
       var icon = GridManager.getIcon(elem.dataset);
       if (!icon.app)
         return;
@@ -846,16 +848,32 @@ Page.prototype = {
   },
 
   /*
-   * Disables the tap event for the page
-   *
-   * @param{Integer} milliseconds
+   * Disables the tap event for the grid
    */
-  disableTap: function pg_disableTap(icon, time) {
-    var olist = this.olist;
-    olist.setAttribute('disabled', true);
-    setTimeout(function disableTapTimeout() {
-      olist.removeAttribute('disabled');
-    }, time || this.DISABLE_TAP_EVENT_DELAY);
+  disableTap: function pg_disableTap(callback) {
+    document.body.setAttribute('disabled-tapping', true);
+
+    var disableTapTimeout = null;
+
+    var enableTap = function enableTap() {
+      document.removeEventListener('visibilitychange', enableTap);
+      window.removeEventListener('hashchange', enableTap);
+      if (disableTapTimeout !== null) {
+        window.clearTimeout(disableTapTimeout);
+        disableTapTimeout = null;
+      }
+      document.body.removeAttribute('disabled-tapping');
+    };
+
+    // We are going to enable the tapping feature under these conditions:
+    // 1. The opened app is in foreground
+    document.addEventListener('visibilitychange', enableTap);
+    // 2. Users click on home button quickly while app are opening
+    window.addEventListener('hashchange', enableTap);
+    // 3. After this time out
+    disableTapTimeout = window.setTimeout(enableTap,
+        this.DISABLE_TAP_EVENT_DELAY);
+
   },
 
   /*
@@ -879,6 +897,24 @@ Page.prototype = {
     var icon = this.getLastIcon();
     icon.remove();
     return icon;
+  },
+
+  /*
+   * Returns the icons which desiredScreen is bigger than position
+   * @param{int} position is DesiredScreen value which with compare
+   */
+  getMisplacedIcons: function pg_getMisplacedIcons(currentScreen) {
+    var misplaced = [];
+    var appsDesiredScreen =
+         this.olist.querySelectorAll('li[data-desired-screen]');
+    var numApps = appsDesiredScreen.length;
+    for (var i = numApps - 1; i >= 0; i--) {
+      var desiredScreen = appsDesiredScreen[i].dataset.desiredScreen;
+      if (desiredScreen > currentScreen) {
+        misplaced.push(GridManager.getIcon(appsDesiredScreen[i].dataset));
+      }
+    }
+    return misplaced;
   },
 
   insertBeforeLastIcon: function pg_insertBeforeLastIcon(icon) {
@@ -954,7 +990,7 @@ Page.prototype = {
       var desiredPos = icon.descriptor.desiredPos;
       var manifest = icon.descriptor.manifestURL;
       // Add to the installed SV apps array
-      GridManager.svPreviouslyInstalledApps.push({'manifest': manifest});
+      GridManager.addPreviouslyInstalled(manifest);
       var numIcons = iconList.length;
       for (var i = 0; (i < numIcons) && (i <= desiredPos); i++) {
         var iconPos = iconList[i].dataset && iconList[i].dataset.desiredPos;

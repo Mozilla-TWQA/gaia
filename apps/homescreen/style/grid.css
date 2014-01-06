@@ -13,21 +13,6 @@
   margin: 0 auto;
   overflow: hidden;
   display: none;
-  /*
-   * We use this rule to make gecko think that they're visible so they are
-   * painted.
-   */
-  border-bottom: 0.01px solid rgba(0,0,0,0.01);
-
-  visibility: hidden;
-}
-
-.apps > div[data-current-page] {
-  visibility: visible;
-}
-
-body[data-transitioning] .apps > div {
-  visibility: visible;
 }
 
 /* Here users can view the clock while grid is loading -> better experience */
@@ -141,7 +126,6 @@ ol:not([disabled]) li.active > div > img {
   height: 1.6rem; /* 15px in otoro */
   margin: 0.3rem auto 0;
   font-weight: 500;
-  letter-spacing: -0.025rem;
 }
 
 /* Alternative icons when an app is being installed */

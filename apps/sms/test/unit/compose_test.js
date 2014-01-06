@@ -3,10 +3,7 @@
 */
 'use strict';
 
-mocha.globals(['0', '6']);
-
 requireApp('sms/js/compose.js');
-requireApp('sms/js/thread_ui.js');
 requireApp('sms/js/utils.js');
 
 requireApp('sms/test/unit/mock_l10n.js');
@@ -83,9 +80,7 @@ suite('compose_test.js', function() {
 
     setup(function() {
       loadBodyHTML('/index.html');
-      // if we don't do the ThreadUI.init - it breaks when run in a full suite
-      ThreadUI.init();
-      // Compose.init('messages-compose-form');
+      Compose.init('messages-compose-form');
       message = document.querySelector('[contenteditable]');
     });
 
@@ -275,6 +270,18 @@ suite('compose_test.js', function() {
         assert.ok(txt[1] instanceof MockAttachment, 'Sub 1 is an attachment');
         assert.equal(txt[2], 'end', 'Last line is end text');
       });
+
+      test('text split in several text nodes', function() {
+        var lastChild = message.lastChild;
+        message.insertBefore(document.createTextNode('hello'), lastChild);
+        message.insertBefore(document.createTextNode(''), lastChild);
+        message.insertBefore(document.createTextNode('world'), lastChild);
+
+        var content = Compose.getContent();
+        assert.equal(content.length, 1);
+        assert.equal(content[0], 'helloworld');
+      });
+
       teardown(function() {
         Compose.clear();
       });
@@ -300,7 +307,12 @@ suite('compose_test.js', function() {
           // concerns interactions between disparate units.
           // See: Bug 868056
           assert.equal(attachment.name, activity.result.name);
-          assert.equal(attachment.blob, activity.result.blob);
+
+          // The blob in the attachment may be a copy of the blob in the
+          // activity result, but the size and type must be the same.
+          // See Bug 944276.
+          assert.equal(attachment.blob.type, activity.result.blob.type);
+          assert.equal(attachment.blob.size, activity.result.blob.size);
 
           done();
         };
@@ -309,7 +321,7 @@ suite('compose_test.js', function() {
         var activity = MockMozActivity.instances[0];
         activity.result = {
           name: 'test',
-          blob: new Blob()
+          blob: new Blob(['fake jpeg'], { type: 'image/jpeg' })
         };
         activity.onsuccess();
       });

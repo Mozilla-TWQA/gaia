@@ -4,7 +4,7 @@
  */
 
 .menu-item {
-  padding-left: 4rem;
+  padding-left: 5.5rem;
   background-repeat: no-repeat;
   background-position: 1.4rem center;
 }
@@ -43,6 +43,10 @@ li:active:not([aria-disabled="true"]) .menu-item::before,
 
 #menuItem-callSettings::before {
   background-position: 0 -15rem;
+}
+
+#menuItem-messagingSettings::before {
+  background-position: -9rem -15rem;
 }
 
 #menuItem-cellularAndData::before {
