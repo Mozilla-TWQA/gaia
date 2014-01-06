@@ -1199,9 +1199,15 @@ class GaiaMtbfTestCase(GaiaTestCase):
                 self.device.manager.removeDir('/data/b2g/mozilla')
             self.device.start_b2g()
 
-        # the emulator can be really slow!
-        self.marionette.set_script_timeout(self._script_timeout)
-        self.marionette.set_search_timeout(self._search_timeout)
+       # we need to set the default timeouts because we may have a new session
+        if self.marionette.timeout is not None:
+            self.marionette.timeouts(self.marionette.TIMEOUT_SEARCH, self.marionette.timeout)
+            self.marionette.timeouts(self.marionette.TIMEOUT_SCRIPT, self.marionette.timeout)
+            self.marionette.timeouts(self.marionette.TIMEOUT_PAGE, self.marionette.timeout)
+        else:
+            self.marionette.timeouts(self.marionette.TIMEOUT_SEARCH, 10000)
+            self.marionette.timeouts(self.marionette.TIMEOUT_PAGE, 30000)
+
         self.lockscreen = LockScreen(self.marionette)
         self.apps = GaiaApps(self.marionette)
         self.data_layer = GaiaData(self.marionette, self.testvars)
@@ -1215,11 +1221,9 @@ class GaiaMtbfTestCase(GaiaTestCase):
         self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
 
     def launch_by_touch(self, name, switch_to_frame=True, url=None, launch_timeout=None):
-        self.marionette.switch_to_frame()
-
         from gaiatest.apps.homescreen.app import Homescreen
         homescreen = Homescreen(self.marionette)
-        homescreen.switch_to_homescreen_frame()  
+        self.marionette.switch_to_frame(self.apps.displayed_app.frame)
  
         icon = self.marionette.find_element('css selector', 'li[aria-label="' + name + '"]')
         while not icon.is_displayed() and homescreen.homescreen_has_more_pages:
