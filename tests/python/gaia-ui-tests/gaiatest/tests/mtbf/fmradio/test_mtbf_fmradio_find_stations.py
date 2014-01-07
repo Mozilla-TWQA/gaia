@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from gaiatest import GaiaMtbfTestCase
+from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.fmradio.app import FmRadio
 
 
