@@ -1208,6 +1208,13 @@ class GaiaMtbfTestCase(GaiaTestCase):
             self.marionette.timeouts(self.marionette.TIMEOUT_SEARCH, 10000)
             self.marionette.timeouts(self.marionette.TIMEOUT_PAGE, 30000)
 
+        self.marionette.switch_to_frame()
+        time.sleep(1)
+        if len(self.marionette.find_elements("css selector", "iframe[data-frame-origin*=ftu]")) != 0:
+            js = os.path.abspath(os.path.join(__file__, os.path.pardir, 'atoms', "gaia_apps.js"))
+            self.marionette.import_script(js)
+            result = self.marionette.execute_async_script("GaiaApps.kill('app://communications.gaiamobile.org/ftu/index.html');")
+
         self.lockscreen = LockScreen(self.marionette)
         self.apps = GaiaApps(self.marionette)
         self.data_layer = GaiaData(self.marionette, self.testvars)
