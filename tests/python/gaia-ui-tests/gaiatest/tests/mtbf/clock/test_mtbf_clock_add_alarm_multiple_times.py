@@ -4,6 +4,7 @@
 
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.clock.app import Clock
+import time
 
 
 class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
@@ -21,6 +22,7 @@ class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
 
         """
 
+        time.sleep(3)
         count = 3
         current_alarm = len(self.clock.alarms)
         for i in range(1, count + 1):
@@ -36,4 +38,5 @@ class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
 
             # Ensure the new alarm has been added and is displayed
             current_alarm = current_alarm + 1
-            self.assertEqual(current_alarm, len(self.clock.alarms))
+
+        self.assertEqual(current_alarm, len(self.clock.alarms))
