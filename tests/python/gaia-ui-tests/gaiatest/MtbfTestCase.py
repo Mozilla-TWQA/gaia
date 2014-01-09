@@ -62,16 +62,7 @@ class GaiaMtbfTestCase(GaiaTestCase):
         from gaiatest.apps.keyboard.app import Keyboard
         self.keyboard = Keyboard(self.marionette)
 
-        # unlock screen and go back to home screen
-        self.lockscreen.unlock()
-        self.data_layer.set_setting("keyboard.ftu.enabled", False)
-        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
-        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
-
-        if self.restart:
-            self.cleanup_gaia(full_reset=False)
-        else:
-            self.cleanup_gaia(full_reset=True)
+        self.cleanup_gaia(full_reset=False)
 
     def launch_by_touch(self, name, switch_to_frame=True, url=None, launch_timeout=None):
         from gaiatest.apps.homescreen.app import Homescreen
@@ -89,7 +80,8 @@ class GaiaMtbfTestCase(GaiaTestCase):
         pt = re.compile("_|-")
         lowered_name = pt.sub("", name).split(' ')[0].lower()
         self.marionette.switch_to_frame()
-        app = self.marionette.find_element('css selector', "iframe[mozapp^='app://" + lowered_name + "'][mozapp$='manifest.webapp']")
+        self.wait_for_element_displayed("css selector", "iframe[mozapp^='app://" + lowered_name + "'][mozapp$='manifest.webapp']")
+        app = self.marionette.find_element("css selector", "iframe[mozapp^='app://" + lowered_name + "'][mozapp$='manifest.webapp']")
 
         iframe_id = app.get_attribute('id')
         if switch_to_frame:
@@ -148,12 +140,12 @@ class GaiaMtbfTestCase(GaiaTestCase):
 
             # reset to home screen
             self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+            self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
 
         # disable sound completely
         self.data_layer.set_volume(0)
 
     def tearDown(self):
-        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
         time.sleep(2)
         MarionetteTestCase.tearDown(self)
 

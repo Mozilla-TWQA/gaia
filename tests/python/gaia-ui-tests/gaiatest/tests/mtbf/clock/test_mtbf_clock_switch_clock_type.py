@@ -4,6 +4,7 @@
 
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.clock.app import Clock
+import time
 
 
 class TestClockSwitchClockType(GaiaMtbfTestCase):
@@ -13,6 +14,7 @@ class TestClockSwitchClockType(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
+        time.sleep(5)
 
     def test_clock_switch_clock_type_and_show_time_date(self):
         """ Switch the clock type and show time and date

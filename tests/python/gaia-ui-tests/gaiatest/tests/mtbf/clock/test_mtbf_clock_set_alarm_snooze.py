@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.clock.app import Clock
+import time
 
 
 class TestClockSetAlarmSnooze(GaiaMtbfTestCase):
@@ -12,6 +13,7 @@ class TestClockSetAlarmSnooze(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
+        time.sleep(5)
 
     def test_clock_set_alarm_snooze(self):
         """ Modify the alarm snooze

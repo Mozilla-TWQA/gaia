@@ -14,6 +14,7 @@ class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
+        time.sleep(5)
 
     def test_clock_add_alarm_multiple_times(self):
         """ Add multiple alarm
@@ -22,7 +23,6 @@ class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
 
         """
 
-        time.sleep(3)
         count = 3
         current_alarm = len(self.clock.alarms)
         for i in range(1, count + 1):

@@ -14,7 +14,7 @@ class TestClockCreateNewAlarm(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
-        time.sleep(3)
+        time.sleep(5)
 
     def test_clock_create_new_alarm(self):
         """ Add an alarm and set label of the new alarm

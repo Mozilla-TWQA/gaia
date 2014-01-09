@@ -14,6 +14,7 @@ class TestClockTurnOnOffAlarm(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
+        time.sleep(5)
 
         # create a new alarm with the default values that are available
         new_alarm = self.clock.tap_new_alarm()
