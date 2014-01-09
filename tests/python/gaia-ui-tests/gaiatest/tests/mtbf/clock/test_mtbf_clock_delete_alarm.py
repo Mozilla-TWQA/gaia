@@ -16,6 +16,13 @@ class TestClockDeleteAlarm(GaiaMtbfTestCase):
         self.app_id = self.launch_by_touch("Clock")
         time.sleep(5)
 
+        if len(self.marionette.find_elements('id', 'alarm-close')) > 0:
+            if self.marionette.find_element('id', 'alarm-close').is_displayed():
+                self.marionette.find_element('id', 'alarm-close').tap()
+        if len(self.marionette.find_elements('id', 'alarm-tab')) > 0:
+            self.wait_for_element_displayed('id', 'alarm-tab')
+            self.marionette.find_element('id', 'alarm-tab').tap()
+
         # create a new alarm with the default values that are available
         new_alarm = self.clock.tap_new_alarm()
         self.clock = new_alarm.tap_done()

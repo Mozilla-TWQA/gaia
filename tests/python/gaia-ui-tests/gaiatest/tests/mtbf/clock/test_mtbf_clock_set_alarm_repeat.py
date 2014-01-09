@@ -15,6 +15,13 @@ class TestClockSetAlarmRepeat(GaiaMtbfTestCase):
         self.app_id = self.launch_by_touch("Clock")
         time.sleep(5)
 
+        if len(self.marionette.find_elements('id', 'alarm-close')) > 0:
+            if self.marionette.find_element('id', 'alarm-close').is_displayed():
+                self.marionette.find_element('id', 'alarm-close').tap()
+        if len(self.marionette.find_elements('id', 'alarm-tab')) > 0:
+            self.wait_for_element_displayed('id', 'alarm-tab')
+            self.marionette.find_element('id', 'alarm-tab').tap()
+
     def test_clock_set_alarm_repeat(self):
         """ Modify the alarm repeat
 
@@ -53,3 +60,4 @@ class TestClockSetAlarmRepeat(GaiaMtbfTestCase):
         # Close alarm
         edit_alarm.tap_done()
         self.clock.wait_for_banner_not_visible()
+
