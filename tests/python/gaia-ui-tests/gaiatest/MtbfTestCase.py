@@ -138,9 +138,9 @@ class GaiaMtbfTestCase(GaiaTestCase):
             # remove data
             self.data_layer.remove_all_contacts()
 
-            # reset to home screen
-            self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
-            self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+        # reset to home screen
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
+        self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
 
         # disable sound completely
         self.data_layer.set_volume(0)
