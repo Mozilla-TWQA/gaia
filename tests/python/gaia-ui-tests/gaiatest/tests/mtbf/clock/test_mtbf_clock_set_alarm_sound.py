@@ -13,7 +13,7 @@ class TestClockSetAlarmSound(GaiaMtbfTestCase):
 
         self.clock = Clock(self.marionette)
         self.app_id = self.launch_by_touch("Clock")
-        time.sleep(%)
+        time.sleep(5)
 
     def test_clock_set_alarm_sound(self):
         """ Modify the alarm sound
