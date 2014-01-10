@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from MtbfTestCase import GaiaMtbfTestCase
-
 from gaiatest.apps.phone.app import Phone
+import time
 
 
 class TestDialer(GaiaMtbfTestCase):

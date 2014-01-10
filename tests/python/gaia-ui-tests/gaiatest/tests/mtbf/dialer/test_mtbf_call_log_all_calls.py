@@ -4,6 +4,7 @@
 
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.phone.app import Phone
+import time
 
 
 class TestCallLogAllCalls(GaiaMtbfTestCase):
