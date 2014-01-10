@@ -15,6 +15,7 @@ class TestDialer(GaiaMtbfTestCase):
         # delete any existing call log entries - call log needs to be loaded
         self.phone = Phone(self.marionette)
         self.phone.launch()
+        time.sleep(5)
 
     def test_dialer_make_call(self):
         # https://moztrap.mozilla.org/manage/case/1298/
