@@ -4,6 +4,7 @@
 
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.fmradio.app import FmRadio
+import time
 
 
 class TestFMRadioTurnOnOff(GaiaMtbfTestCase):
@@ -13,13 +14,15 @@ class TestFMRadioTurnOnOff(GaiaMtbfTestCase):
 
         self.fm_radio = FmRadio(self.marionette)
         self.app_id = self.launch_by_touch("FM Radio")
+        time.sleep(5)
 
     def test_turn_radio_on_off(self):
         # check the headphone is plugged-in or not
         self.assertTrue(self.data_layer.is_antenna_available, 'Antenna (headphones) not plugged in')
 
         # turn the radio off
-        self.fm_radio.tap_power_button()
+        if self.fm_radio.is_power_button_on:
+            self.fm_radio.tap_power_button()
 
         # check the radio is off
         self.fm_radio.wait_for_radio_off()
