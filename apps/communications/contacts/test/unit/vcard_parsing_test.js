@@ -1,7 +1,13 @@
+/* global MockLazyLoader, MockMatcher, MockMozContacts, MocksHelper,
+    mozContact, VCFReader */
+
+'use strict';
+
 require('/shared/test/unit/mocks/mock_lazy_loader.js');
 requireApp('communications/contacts/test/unit/mock_contacts_match.js');
 requireApp('communications/contacts/js/utilities/vcard_parser.js');
 requireApp('communications/contacts/test/unit/mock_mozContacts.js');
+requireApp('communications/contacts/test/unit/mock_utils.js');
 requireApp('system/shared/test/unit/mocks/mock_moz_contact.js');
 
 var vcf1 = 'BEGIN:VCARD\n' +
@@ -122,12 +128,16 @@ var vcardUnicodeQuotedPrintable = 'BEGIN:VCARD\n' +
   '=55=20=44=72=65=73=64=65=6E\n' +
   'END:VCARD\n';
 
-if (!this.contacts) {
-  this.contacts = null;
+if (!window.contacts) {
+  window.contacts = null;
 }
 
-if (!this.LazyLoader) {
-  LazyLoader = null;
+if (!window.LazyLoader) {
+  window.LazyLoader = null;
+}
+
+if (!window.utils) {
+  window.utils = null;
 }
 
 var mocksHelperForVCardParsing = new MocksHelper([
@@ -136,15 +146,17 @@ var mocksHelperForVCardParsing = new MocksHelper([
 
 suite('vCard parsing settings', function() {
   function stub(additionalCode, ret) {
-    if (additionalCode && typeof additionalCode !== 'function')
+    if (additionalCode && typeof additionalCode !== 'function') {
       ret = additionalCode;
+    }
 
     var nfn = function() {
       nfn.callCount++;
       nfn.calledWith = [].slice.call(arguments);
 
-      if (typeof additionalCode === 'function')
+      if (typeof additionalCode === 'function') {
         additionalCode.apply(this, arguments);
+      }
 
       return ret;
     };
@@ -154,12 +166,15 @@ suite('vCard parsing settings', function() {
 
   mocksHelperForVCardParsing.attachTestHelpers();
 
-  var realMozContacts, realMatcher, realLazyLoader;
+  var realMozContacts, realMatcher, realLazyLoader, realUtils;
   suite('SD Card import', function() {
     setup(function() {
+      navigator.mozContacts.contacts = [];
+    });
+
+    suiteSetup(function() {
       realMozContacts = navigator.mozContacts;
       navigator.mozContacts = MockMozContacts;
-      navigator.mozContacts.contacts = [];
       navigator.mozContacts.find = function mockMozContactsFind() {
         var self = this;
         var req = {
@@ -167,7 +182,9 @@ suite('vCard parsing settings', function() {
             req.result = self.contacts;
             cb();
           },
-          set onerror(cb) {}
+          get onsuccess() {},
+          set onerror(cb) {},
+          get onerror() {}
         };
         return req;
       };
@@ -178,12 +195,22 @@ suite('vCard parsing settings', function() {
 
       realLazyLoader = window.LazyLoader;
       window.LazyLoader = MockLazyLoader;
+
+      realUtils = window.utils;
+      window.utils = {
+        'misc' : {
+          'toMozContact': function(c) {
+            return c;
+          }
+        }
+      };
     });
 
-    teardown(function() {
+    suiteTeardown(function() {
       navigator.mozContacts = realMozContacts;
       window.contacts.Matcher = realMatcher;
       window.LazyLoader = realLazyLoader;
+      window.utils = realUtils;
     });
 
     test('- should properly decode Quoted Printable texts ', function(done) {
@@ -510,6 +537,42 @@ suite('vCard parsing settings', function() {
           assert.strictEqual('Freunde und Förderer TU Dresden', contact.org[0]);
           done();
         };
+      });
+    });
+
+    test('- vcards with more than 5 elements', function(done) {
+      var superVcard = '';
+      var CARDS = 6;
+      for (var i = 0; i < CARDS; i++) {
+        superVcard += vcf1 + '\n';
+      }
+
+      var reader = new VCFReader(superVcard);
+      reader.onread = stub();
+      reader.onimported = stub();
+      reader.onerror = stub();
+
+      reader.process(function import_finish(total) {
+        assert.equal(CARDS, total);
+        done();
+      });
+    });
+
+    test('- vcards with more than 25 elements', function(done) {
+      var superVcard = '';
+      var CARDS = 26;
+      for (var i = 0; i < CARDS; i++) {
+        superVcard += vcf1 + '\n';
+      }
+
+      var reader = new VCFReader(superVcard);
+      reader.onread = stub();
+      reader.onimported = stub();
+      reader.onerror = stub();
+
+      reader.process(function import_finish(total) {
+        assert.equal(CARDS, total);
+        done();
       });
     });
   });

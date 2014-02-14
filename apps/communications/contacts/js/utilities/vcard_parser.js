@@ -366,6 +366,7 @@ var VCFReader = (function _VCFReader() {
       '/contacts/js/utilities/misc.js',
       '/contacts/js/contacts_matcher.js',
       '/contacts/js/contacts_merger.js',
+      '/contacts/js/utilities/image_thumbnail.js',
       '/contacts/js/merger_adapter.js'
     ], function() {
       // Start processing the text
@@ -544,7 +545,7 @@ var VCFReader = (function _VCFReader() {
         cardsProcessed += 1;
 
         if (cardsProcessed === VCFReader.CONCURRENCY ||
-          cardsProcessed === this.total) {
+          (cardsProcessed + this.processed) === this.total) {
           _parseEntries(cardArray, callPost);
           break;
         }

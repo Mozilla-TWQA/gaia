@@ -19,10 +19,10 @@ requireApp('sms/test/unit/mock_l10n.js');
 requireApp('sms/test/unit/mock_time_headers.js');
 requireApp('sms/test/unit/mock_navigatormoz_sms.js');
 requireApp('sms/test/unit/mock_attachment_menu.js');
+require('/shared/test/unit/mocks/mock_contact_photo_helper.js');
 
 requireApp('sms/js/link_helper.js');
 requireApp('sms/js/contacts.js');
-requireApp('sms/js/fixed_header.js');
 requireApp('sms/js/utils.js');
 requireApp('sms/js/compose.js');
 requireApp('sms/js/threads.js');
@@ -39,7 +39,8 @@ requireApp('sms/js/startup.js');
 
 var MocksHelperForSmsUnitTest = new MocksHelper([
   'AttachmentMenu',
-  'TimeHeaders'
+  'TimeHeaders',
+  'ContactPhotoHelper'
 ]).init();
 
 suite('SMS App Unit-Test', function() {
@@ -131,9 +132,19 @@ suite('SMS App Unit-Test', function() {
   setup(function() {
     // We mockup the method for retrieving the threads
     this.sinon.stub(MessageManager, 'getThreads',
-      function(callback, extraArg) {
+      function(options) {
         var threadsMockup = new MockThreadList();
-        callback(threadsMockup, extraArg);
+
+        var each = options.each;
+        var end = options.end;
+        var done = options.done;
+
+        for (var i = 0; i < threadsMockup.length; i++) {
+          each && each(threadsMockup[i]);
+        }
+
+        end && end();
+        done && done();
       });
 
     this.sinon.stub(MessageManager, 'getMessages',
@@ -181,7 +192,7 @@ suite('SMS App Unit-Test', function() {
     // async.
     setup(function(done) {
       this.sinon.spy(navigator.mozL10n, 'localize');
-      MessageManager.getThreads(ThreadListUI.renderThreads, done);
+      ThreadListUI.renderThreads(done);
       _tci = ThreadListUI.checkInputs;
     });
     // We are gonna review the HTML structure with this suite
@@ -190,20 +201,25 @@ suite('SMS App Unit-Test', function() {
       test('properly updates in response to an arriving message of a ' +
         'different type', function() {
         var container = ThreadListUI.container;
-        MessageManager.getThreads(function(threads) {
-          threads.forEach(function(thread, idx) {
-            var newMessage = {
-              threadId: thread.id,
-              sender: thread.participants[0],
-              delivery: 'received',
-              timestamp: +thread.timestamp,
-              type: thread.lastMessageType === 'mms' ? 'sms' : 'mms'
-            };
-            MessageManager.onMessageReceived({
-              message: newMessage
-            });
+
+        var each = function(thread) {
+          var newMessage = {
+            threadId: thread.id,
+            sender: thread.participants[0],
+            delivery: 'received',
+            timestamp: +thread.timestamp,
+            type: thread.lastMessageType === 'mms' ? 'sms' : 'mms'
+          };
+          MessageManager.onMessageReceived({
+            message: newMessage
           });
-        });
+        };
+
+        var options = {
+          each: each
+        };
+
+        MessageManager.getThreads(options);
         var mmsThreads = container.querySelectorAll(
           '[data-last-message-type="mms"]'
         );

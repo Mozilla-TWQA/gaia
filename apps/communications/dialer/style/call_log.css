@@ -27,7 +27,22 @@ form[role="dialog"][data-type="edit"] > menu {
   transform: translateY(110%);
 }
 
+#call-log-container[data-type="list"] header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+}
+
 /* Override Building Block styles for lists */
+
+#call-log-container[data-type="list"] ol {
+  /* Bug 967880 - [Call Log] Background doesn't scroll with the logs causing
+   * expensive over-invalidation.
+   */
+  background-color: white;
+}
+
 #call-log-container[data-type="list"] li {
   height: 7rem;
   padding: 0.5rem 0 0;
@@ -86,11 +101,6 @@ ol, ul {
 
 .view-body-inner ol {
   overflow: hidden;
-}
-
-.view-body .fixed-title {
-  background-position: 1.5rem 0;
-  height: 3.5rem;
 }
 
 .icon-container {

@@ -1,7 +1,7 @@
 /* -*- Mode: js; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 
-/*global Settings, Utils, Attachment, AttachmentMenu, MozActivity */
+/*global Settings, Utils, Attachment, AttachmentMenu, MozActivity, SMIL */
 /*exported Compose */
 
 'use strict';
@@ -44,25 +44,46 @@ var Compose = (function() {
   };
 
   var subject = {
-    showing: false,
+    isVisible: false,
     toggle: function sub_toggle() {
-      dom.subject.classList.toggle('hide');
-      // show / hide subject and change the focus
-      (this.showing = !this.showing) ?
-        dom.subject.focus() : dom.message.focus();
+      this.isVisible ? this.hide() : this.show();
+    },
+    show: function sub_show() {
+      dom.subject.classList.remove('hide');
+      this.isVisible = true;
+      dom.subject.focus();
+      Compose.updateType();
+      onContentChanged();
+    },
+    hide: function sub_hide() {
+      dom.subject.classList.add('hide');
+      this.isVisible = false;
+      dom.message.focus();
       Compose.updateType();
       onContentChanged();
     },
     clear: function sub_clear() {
       dom.subject.value = '';
       dom.subject.classList.add('hide');
-      this.showing = false;
+      this.isVisible = false;
+    },
+    getContent: function sub_getContent() {
+      // Only send value if subject is showing. If not, send empty string
+      // We need to transform any linebreak or into a single space
+      return subject.isShowing ?
+             dom.subject.value.replace(/\n\s*/g, ' ') : '';
+    },
+    setContent: function sub_setContent(content) {
+      dom.subject.value = content;
+    },
+    getMaxLength: function sub_getMaxLength() {
+      return dom.subject.maxLength;
     },
     get isEmpty() {
       return !dom.subject.value.length;
     },
     get isShowing() {
-      return this.showing;
+      return this.isVisible;
     }
   };
 
@@ -273,17 +294,6 @@ var Compose = (function() {
       }
     },
 
-    toggleSubject: function() {
-      subject.toggle();
-    },
-
-    getSubject: function() {
-      // Only send value if subject is showing. If not, send empty string
-      // We need to transform any linebreak or into a single space
-      return subject.isShowing ?
-               dom.subject.value.replace(/\n\s*/g, ' ') : '';
-    },
-
     getContent: function() {
       var content = [];
       var node;
@@ -323,6 +333,48 @@ var Compose = (function() {
       }
 
       return content;
+    },
+
+    getSubject: function() {
+      return subject.getContent();
+    },
+
+    toggleSubject: function() {
+      subject.toggle();
+    },
+
+    /** Render message (sms or mms)
+     *
+     * @param {message} message Full message to be loaded into the composer.
+     *
+     */
+    fromMessage: function(message) {
+      this.clear();
+
+      if (message.type === 'mms') {
+        if (message.subject) {
+          subject.setContent(message.subject);
+          subject.show();
+        }
+        SMIL.parse(message, function(elements) {
+          elements.forEach(function(element) {
+            if (element.blob) {
+              var attachment = new Attachment(element.blob, {
+                name: element.name,
+                isDraft: true
+              });
+              this.append(attachment);
+            }
+            if (element.text) {
+              this.append(element.text);
+            }
+          }, Compose);
+        });
+      } else {
+        this.append(message.body);
+      }
+
+      this.focus();
     },
 
     getText: function() {
@@ -544,10 +596,44 @@ var Compose = (function() {
         }
 
         if (typeof requestProxy.onsuccess === 'function') {
-          requestProxy.onsuccess(new Attachment(result.blob, {
+          var originalBlob = result.blob;
+          var attachmentOptions = {
             name: result.name,
             isDraft: true
-          }));
+          };
+
+          // We ought to just be able to call the onsuccess function now.
+          // But to workaround bug 944276, if we get a blob that is not a File
+          // and is not a big image that we are going to resize we need to
+          // make a private copy of it. Otherwise, it won't work if we
+          // pass it to another activity (like the open activity of Gallery).
+          /* global File, FileReader */  // Keep jshint happy
+          if (originalBlob instanceof File ||
+              (originalBlob.type.startsWith('image/') &&
+               Settings.mmsSizeLimitation &&
+               originalBlob.size > Settings.mmsSizeLimitation)) {
+            // Safe to call onsuccess with the original blob in this case
+            requestProxy.onsuccess(new Attachment(originalBlob,
+                                                  attachmentOptions));
+          } else {
+            // Make a local copy of the blob before calling onsuccess
+            // to workaround bug 944276.
+            var reader = new FileReader();
+            reader.onload = function() {
+              var buffer = reader.result;
+              var copyBlob = new Blob([buffer], { type: originalBlob.type });
+              requestProxy.onsuccess(new Attachment(copyBlob,
+                                                    attachmentOptions));
+            };
+            reader.onerror = function() {
+              // This should never happen, but if it does, we'll try
+              // to use the original blob for lack of any better alternative.
+              console.error('Failed to copy blob.');
+              requestProxy.onsuccess(new Attachment(originalBlob,
+                                                    attachmentOptions));
+            };
+            reader.readAsArrayBuffer(originalBlob);
+          }
         }
       };
 
@@ -603,15 +689,15 @@ var Compose = (function() {
     }
   });
 
-  Object.defineProperty(compose, 'SUBJECT_MAX_LENGTH', {
-    get: function composeGetSubjectMaxLength() {
-      return 40;
+  Object.defineProperty(compose, 'isSubjectVisible', {
+    get: function composeGetResizeState() {
+      return subject.isShowing;
     }
   });
 
-  Object.defineProperty(compose, 'isSubjectShowing', {
-    get: function composeGetSubjectShowing() {
-      return subject.isShowing;
+  Object.defineProperty(compose, 'subjectMaxLength', {
+    get: function composeGetResizeState() {
+      return subject.getMaxLength();
     }
   });
 
