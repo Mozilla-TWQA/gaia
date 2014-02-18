@@ -6,6 +6,7 @@ import time
 from MtbfTestCase import GaiaMtbfTestCase
 
 from gaiatest.apps.phone.app import Phone
+from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 
 
 class TestDialer(GaiaMtbfTestCase):
@@ -15,6 +16,7 @@ class TestDialer(GaiaMtbfTestCase):
         GaiaMtbfTestCase.setUp(self)
 
         self.phone = Phone(self.marionette)
+        self.mtbf_phone = MTBF_Phone(self.marionette)
         self.phone.launch()
 
     def test_dialer_make_call(self):
@@ -46,7 +48,8 @@ class TestDialer(GaiaMtbfTestCase):
         # An open call creates problems for future tests
         self.data_layer.kill_active_call()
 
+        self.marionette.switch_to_frame()
         self.marionette.switch_to_frame(self.phone.app.frame_id)
-        self.phone.tap_keypad_toolbar_button()
+        self.mtbf_phone.general_tear_down()
 
         GaiaMtbfTestCase.tearDown(self)

@@ -6,6 +6,7 @@ import time
 from MtbfTestCase import GaiaMtbfTestCase
 
 from gaiatest.apps.phone.app import Phone
+from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 from gaiatest.apps.phone.regions.attention_screen import AttentionScreen
 
 IMEI_CODE = "*#06#"
@@ -19,6 +20,7 @@ class TestMMI(GaiaMtbfTestCase):
         GaiaMtbfTestCase.setUp(self)
 
         self.phone = Phone(self.marionette)
+        self.mtbf_phone = MTBF_Phone(self.marionette)
         self.phone.launch()
 
     def test_MMI_code_IMEI(self):
@@ -29,9 +31,10 @@ class TestMMI(GaiaMtbfTestCase):
         self.assertEqual(attention_screen.message, self.testvars['imei'])
 
     def tearDown(self):
+        # Close the imei message prompt
         self.marionette.switch_to_frame()
         self.marionette.switch_to_frame(self.phone.app.frame_id)
         self.marionette.find_element('id', 'mmi-close').tap()
 
-        self.phone.tap_keypad_toolbar_button()
+        self.mtbf_phone.general_tear_down()
         GaiaMtbfTestCase.tearDown(self)

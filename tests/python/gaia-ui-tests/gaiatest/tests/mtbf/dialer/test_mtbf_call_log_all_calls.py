@@ -5,6 +5,7 @@
 import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.phone.app import Phone
+from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 
 
 class TestCallLogAllCalls(GaiaMtbfTestCase):
@@ -14,6 +15,7 @@ class TestCallLogAllCalls(GaiaMtbfTestCase):
 
         # delete any existing call log entries - call log needs to be loaded
         self.phone = Phone(self.marionette)
+        self.mtbf_phone = MTBF_Phone(self.marionette)
         self.phone.launch()
 
     def test_call_log_all_calls(self):
@@ -47,6 +49,9 @@ class TestCallLogAllCalls(GaiaMtbfTestCase):
         self.assertIn(test_phone_number, call_log.first_all_call_text)
 
     def tearDown(self):
-        self.phone.tap_keypad_toolbar_button()
+        self.marionette.switch_to_frame()
+        self.marionette.switch_to_frame(self.phone.app.frame_id)
+        self.mtbf_phone.general_tear_down()
+
         GaiaMtbfTestCase.tearDown(self)
 

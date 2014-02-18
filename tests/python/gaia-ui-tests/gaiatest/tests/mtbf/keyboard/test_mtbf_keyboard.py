@@ -13,13 +13,14 @@ class TestKeyboard(GaiaMtbfTestCase):
 
     _string = "aG1D2s3~!=@.#$^aśZïd".decode("UTF-8")
 
-    def test_keyboard_basic(self):
+    def setUp(self):
         time.sleep(5)
         # Use the contacts app to enter some text
         contact = MockContact()
         contacts_app = Contacts(self.marionette)
         contacts_app.launch()
 
+    def test_keyboard_basic(self):
         new_contact_form = contacts_app.tap_new_contact()
         new_contact_form.type_phone(contact['tel'][0]['value'])
         new_contact_form.type_comment('')
@@ -44,4 +45,6 @@ class TestKeyboard(GaiaMtbfTestCase):
         contact_details = contacts_app.contacts[0].tap()
         output_text = contact_details.comments
 
-        self.assertEqual(self._string[:14] + ' ' + self._string[15:] + 'Æ'.decode("UTF-8"), output_text)
+        self.assertEqual(self._string[:14] + ' ' + self._string[15:] + 'Æ'.decode("UTF-8"), output_text
+
+    #tearDown() is going to be finished after contact is finished
