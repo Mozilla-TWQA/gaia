@@ -15,5 +15,7 @@ class Battery(Base):
         checkbox = self.marionette.find_element(*self._power_save_checkbox_locator)
         label = self.marionette.find_element(*self._power_save_label_locator)
         checkbox_state = checkbox.is_selected()
+        if checkbox_state is True:
+            label.tap()
         label.tap()
-        self.wait_for_condition(lambda m: checkbox_state is not checkbox.is_selected())
+        self.wait_for_condition(lambda m: checkbox.is_selected())

@@ -2,9 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
-
 from gaiatest.apps.phone.app import Phone
 from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 from marionette.errors import JavascriptException
@@ -17,8 +15,9 @@ class TestDialerAirplaneMode(GaiaMtbfTestCase):
         GaiaMtbfTestCase.setUp(self)
 
         self.phone = Phone(self.marionette)
-        self.mtbf_phone = MTBF_Phone(self.marionette)
         self.phone.launch()
+        self.mtbf_phone = MTBF_Phone(self.marionette)
+        self.phone.tap_keypad_toolbar_button()
 
     def test_dialer_airplane_mode(self):
         # https://moztrap.mozilla.org/manage/case/2282/
@@ -48,10 +47,5 @@ class TestDialerAirplaneMode(GaiaMtbfTestCase):
 
     def tearDown(self):
         self.data_layer.set_setting('airplaneMode.enabled', False)
-        time.sleep(5)
-
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.phone.app.frame_id)
-        self.phone.tap_keypad_toolbar_button()
 
         GaiaMtbfTestCase.tearDown(self)
