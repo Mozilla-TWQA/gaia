@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.phone.app import Phone
 from gaiatest.mtbf_apps.phone.app import MTBF_Phone
@@ -15,8 +14,9 @@ class TestCallLogAllCalls(GaiaMtbfTestCase):
 
         # delete any existing call log entries - call log needs to be loaded
         self.phone = Phone(self.marionette)
-        self.mtbf_phone = MTBF_Phone(self.marionette)
         self.phone.launch()
+        self.mtbf_phone = MTBF_Phone(self.marionette)
+        self.phone.tap_keypad_toolbar_button()
 
     def test_call_log_all_calls(self):
         # https://moztrap.mozilla.org/manage/case/1306/
@@ -49,9 +49,5 @@ class TestCallLogAllCalls(GaiaMtbfTestCase):
         self.assertIn(test_phone_number, call_log.first_all_call_text)
 
     def tearDown(self):
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.phone.app.frame_id)
-        self.phone.tap_keypad_toolbar_button()
-
         GaiaMtbfTestCase.tearDown(self)
 
