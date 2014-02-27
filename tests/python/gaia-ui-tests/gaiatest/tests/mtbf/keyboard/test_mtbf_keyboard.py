@@ -3,7 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.contacts.app import Contacts
 from gaiatest.mocks.mock_contact import MockContact
@@ -14,7 +13,6 @@ class TestKeyboard(GaiaMtbfTestCase):
     _string = "aG1D2s3~!=@.#$^aśZïd".decode("UTF-8")
 
     def setUp(self):
-        time.sleep(5)
         GaiaMtbfTestCase.setUp(self)
         # Use the contacts app to enter some text
         self.contact = MockContact()
