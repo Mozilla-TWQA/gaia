@@ -16,7 +16,7 @@ class Homescreen(Base):
     _homescreen_icon_locator = (By.CSS_SELECTOR, 'li.icon[aria-label="%s"]')
     _visible_icons_locator = (By.CSS_SELECTOR, 'div.page[style*="transform: translateX(0px);"] > ol > .icon')
     _edit_mode_locator = (By.CSS_SELECTOR, 'body[data-mode="edit"]')
-    _search_bar_icon_locator = (By.CSS_SELECTOR, '#evme-activation-icon input')
+    _search_bar_icon_locator = (By.TAG_NAME, 'input')
     _landing_page_locator = (By.ID, 'icongrid')
     _collections_locator = (By.CSS_SELECTOR, 'li.icon[data-collection-name]')
     _collection_locator = (By.CSS_SELECTOR, "li.icon[data-collection-name *= '%s']")
@@ -128,10 +128,10 @@ class Homescreen(Base):
         root_el = self.marionette.find_element(self._homescreen_icon_locator[0], self._homescreen_icon_locator[1] % app_name)
         return self.InstalledApp(self.marionette, root_el)
 
-    class InstalledApp(PageRegion):
+class InstalledApp(PageRegion):
 
         _delete_app_locator = (By.CSS_SELECTOR, 'li.icon[aria-label="%s"] span.options')
-
+	_collection_locator= (By.CSS_SELECTOR, "li.icon[data-collection-name *= '%s']")
         @property
         def name(self):
             return self.root_element.get_attribute('aria-label')
@@ -150,3 +150,17 @@ class Homescreen(Base):
 
             from gaiatest.apps.homescreen.regions.confirm_dialog import ConfirmDialog
             return ConfirmDialog(self.marionette)
+
+
+        def tap_delete_collections(self):
+            """Tap on (x) to delete app"""
+            delete_collections_locator = (self._collection_locator[0], self._collection_locator[1] % self.name)
+            self.wait_for_element_displayed(*collection_locator)
+            self.marionette.find_element(*collection_locator).tap()
+
+            from gaiatest.apps.homescreen.regions.confirm_dialog import ConfirmDialog
+            return ConfirmDialog(self.marionette)
+
+
+
+

@@ -56,12 +56,12 @@ class Clock(Base):
 
     def tap_analog_display(self):
         self.wait_for_element_displayed(*self._analog_clock_display_locator)
-        self.marionette.find_element(*self._analog_clock_display_locator).tap()
+        self.marionette.find_element(*self._analog_clock_display_locator).tap(10,10)
         self.wait_for_element_displayed(*self._digital_clock_display_locator)
 
     def tap_digital_display(self):
         self.wait_for_element_displayed(*self._digital_clock_display_locator)
-        self.marionette.find_element(*self._digital_clock_display_locator).tap()
+        self.marionette.find_element(*self._digital_clock_display_locator).tap(10,10)
         self.wait_for_element_displayed(*self._analog_clock_display_locator)
 
     def tap_new_alarm(self):
