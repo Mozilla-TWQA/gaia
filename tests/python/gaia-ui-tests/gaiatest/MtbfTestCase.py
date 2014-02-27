@@ -32,12 +32,12 @@ class GaiaMtbfTestCase(GaiaTestCase):
                 pass
 
         self.device = GaiaDevice(self.marionette, self.testvars)
+        if self.device.is_android_build:
+            self.device.add_device_manager(self.device_manager)
         if self.restart and (self.device.is_android_build or self.marionette.instance):
             self.device.stop_b2g()
             if self.device.is_android_build:
-                # revert device to a clean state
-                self.device.manager.removeDir('/data/local/storage/persistent')
-                self.device.manager.removeDir('/data/b2g/mozilla')
+                self.cleanup_data()
             self.device.start_b2g()
 
        # we need to set the default timeouts because we may have a new session
@@ -73,11 +73,14 @@ class GaiaMtbfTestCase(GaiaTestCase):
         else:
             self.cleanup_gaia(full_reset=True)
 
+        # always sleep 4 seconds before starting
+        time.sleep(4)
+
     def launch_by_touch(self, name, switch_to_frame=True, url=None, launch_timeout=None):
         from gaiatest.apps.homescreen.app import Homescreen
         homescreen = Homescreen(self.marionette)
         self.marionette.switch_to_frame(self.apps.displayed_app.frame)
-
+ 
         icon = self.marionette.find_element('css selector', 'li[aria-label="' + name + '"]')
         while not icon.is_displayed() and homescreen.homescreen_has_more_pages:
             homescreen.go_to_next_page()
@@ -156,28 +159,4 @@ class GaiaMtbfTestCase(GaiaTestCase):
         self.marionette.execute_script("window.wrappedJSObject.dispatchEvent(new Event('home'));")
         time.sleep(2)
         MarionetteTestCase.tearDown(self)
-
-    # this is to do some recovery for an app to go back to its main page.
-    def recover_to_default(self):
-        # handle the back icon button
-        back_list = self.marionette.find_elements('css selector', 'span.icon-back')
-        if back_list.__len__() > 0:
-            for item in back_list:
-                if item.is_displayed():
-                    item.tap()
-                    return 0
-
-        # handle the cancel icon button
-        close_list = self.marionette.find_elements('css selector', 'span.icon-close')
-        if close_list.__len__() > 0:
-            for item in close_list:
-                if item.is_displayed():
-                    item.tap()
-                    return 0
-
-        # handle the back button
-        back = self.marionette.find_element('id', 'test_panael_back')
-        if back.is_displayed():
-            back.tap()
-            return 0
 

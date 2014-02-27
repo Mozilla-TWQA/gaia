@@ -4,8 +4,8 @@
 
 import time
 from MtbfTestCase import GaiaMtbfTestCase
-
 from gaiatest.apps.phone.app import Phone
+from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 from marionette.errors import JavascriptException
 
 
@@ -17,6 +17,8 @@ class TestDialerAirplaneMode(GaiaMtbfTestCase):
 
         self.phone = Phone(self.marionette)
         self.phone.launch()
+        self.mtbf_phone = MTBF_Phone(self.marionette)
+        self.phone.tap_keypad_toolbar_button()
 
     def test_dialer_airplane_mode(self):
         # https://moztrap.mozilla.org/manage/case/2282/
@@ -46,6 +48,5 @@ class TestDialerAirplaneMode(GaiaMtbfTestCase):
 
     def tearDown(self):
         self.data_layer.set_setting('airplaneMode.enabled', False)
-        time.sleep(5)
-        self.phone.tap_keypad_toolbar_button()
+
         GaiaMtbfTestCase.tearDown(self)

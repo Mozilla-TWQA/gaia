@@ -1,8 +1,4 @@
-/*
-  Compose Tests
-*/
-
-/*global MocksHelper, MockAttachment, MockL10n, loadBodyHTML,
+/* global MocksHelper, MockAttachment, MockL10n, loadBodyHTML,
          Compose, Attachment, MockMozActivity, Settings, Utils,
          AttachmentMenu */
 
@@ -96,17 +92,29 @@ suite('compose_test.js', function() {
         Compose.clear();
       });
 
-      test('Toggle change the visibility', function() {
+      test('Toggle field', function() {
         assert.isTrue(subject.classList.contains('hide'));
+        // Show
         Compose.toggleSubject();
         assert.isFalse(subject.classList.contains('hide'));
+        // Hide
         Compose.toggleSubject();
         assert.isTrue(subject.classList.contains('hide'));
       });
 
+      test('Get content from subject field', function() {
+        var content = 'Title';
+        subject.value = content;
+        // We need to show the subject to get content
+        Compose.toggleSubject();
+        assert.equal(Compose.getSubject(), content);
+      });
+
       test('Sent subject doesnt have line breaks (spaces instead)', function() {
+        // Set the value
         subject.value = 'Line 1\nLine 2\n\n\n\nLine 3';
-        Compose.toggleSubject(); // we need to show the subject to get content
+        // We need to show the subject to get content
+        Compose.toggleSubject();
         var text = Compose.getSubject();
         assert.equal(text, 'Line 1 Line 2 Line 3');
       });
@@ -368,7 +376,12 @@ suite('compose_test.js', function() {
           // concerns interactions between disparate units.
           // See: Bug 868056
           assert.equal(attachment.name, activity.result.name);
-          assert.equal(attachment.blob, activity.result.blob);
+
+          // The blob in the attachment may be a copy of the blob in the
+          // activity result, but the size and type must be the same.
+          // See Bug 944276.
+          assert.equal(attachment.blob.type, activity.result.blob.type);
+          assert.equal(attachment.blob.size, activity.result.blob.size);
 
           done();
         };
@@ -377,7 +390,7 @@ suite('compose_test.js', function() {
         var activity = MockMozActivity.instances[0];
         activity.result = {
           name: 'test',
-          blob: new Blob()
+          blob: new Blob(['fake jpeg'], { type: 'image/jpeg' })
         };
         activity.onsuccess();
       });

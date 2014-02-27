@@ -3,7 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.ui_tests.app import UiTests
 from gaiatest.mtbf_apps.ui_tests.app import MTBF_UiTests
@@ -12,12 +11,12 @@ from gaiatest.mtbf_apps.ui_tests.app import MTBF_UiTests
 class TestKeyboardPredictiveKey(GaiaMtbfTestCase):
 
     def setUp(self):
-        time.sleep(5)
         GaiaMtbfTestCase.setUp(self)
 
+        self.app_id = self.launch_by_touch("UI tests")
         self.ui_tests = UiTests(self.marionette)
         self.mtbf_ui_tests = MTBF_UiTests(self.marionette)
-        self.app_id = self.launch_by_touch("UI tests")
+        self.mtbf_ui_tests.back_to_main_screen()
 
     def test_keyboard_predictive_key(self):
         # go to UI/keyboard page
@@ -43,8 +42,5 @@ class TestKeyboardPredictiveKey(GaiaMtbfTestCase):
         self.assertEqual(typed_word, expected_word)
 
     def tearDown(self):
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.app_id)
-        self.mtbf_ui_tests.back_to_main_screen()
         GaiaMtbfTestCase.tearDown(self)
 

@@ -2,20 +2,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
-
 from gaiatest.apps.phone.app import Phone
+from gaiatest.mtbf_apps.phone.app import MTBF_Phone
 
 
 class TestDialer(GaiaMtbfTestCase):
 
     def setUp(self):
-        time.sleep(5)
         GaiaMtbfTestCase.setUp(self)
 
         self.phone = Phone(self.marionette)
-        self.phone.launch()
+        self.phone.launch() 
+        self.mtbf_phone = MTBF_Phone(self.marionette)
+        self.phone.tap_keypad_toolbar_button()
 
     def test_dialer_make_call(self):
         # https://moztrap.mozilla.org/manage/case/1298/
@@ -45,8 +45,5 @@ class TestDialer(GaiaMtbfTestCase):
         # In case the assertion fails this will still kill the call
         # An open call creates problems for future tests
         self.data_layer.kill_active_call()
-
-        self.marionette.switch_to_frame(self.phone.app.frame_id)
-        self.phone.tap_keypad_toolbar_button()
 
         GaiaMtbfTestCase.tearDown(self)

@@ -13,9 +13,9 @@ class CellDataPrompt(Base):
 
     def __init__(self, marionette):
         Base.__init__(self, marionette)
-        self.wait_for_element_displayed(*self._cell_data_prompt_turn_on_button_locator)
 
     def turn_on(self):
+        self.wait_for_element_displayed(*self._cell_data_prompt_turn_on_button_locator)
         self.marionette.find_element(*self._cell_data_prompt_turn_on_button_locator).tap()
 
     @property

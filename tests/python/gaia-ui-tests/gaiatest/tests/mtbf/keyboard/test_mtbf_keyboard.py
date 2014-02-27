@@ -3,7 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.apps.contacts.app import Contacts
 from gaiatest.mocks.mock_contact import MockContact
@@ -13,15 +12,16 @@ class TestKeyboard(GaiaMtbfTestCase):
 
     _string = "aG1D2s3~!=@.#$^aśZïd".decode("UTF-8")
 
-    def test_keyboard_basic(self):
-        time.sleep(5)
+    def setUp(self):
+        GaiaMtbfTestCase.setUp(self)
         # Use the contacts app to enter some text
-        contact = MockContact()
-        contacts_app = Contacts(self.marionette)
-        contacts_app.launch()
+        self.contact = MockContact()
+        self.contacts_app = Contacts(self.marionette)
+        self.contacts_app.launch()
 
-        new_contact_form = contacts_app.tap_new_contact()
-        new_contact_form.type_phone(contact['tel'][0]['value'])
+    def test_keyboard_basic(self):
+        new_contact_form = self.contacts_app.tap_new_contact()
+        new_contact_form.type_phone(self.contact['tel'][0]['value'])
         new_contact_form.type_comment('')
 
         # initialize the keyboard app
@@ -39,9 +39,13 @@ class TestKeyboard(GaiaMtbfTestCase):
         # go back to app frame and finish this
         self.apps.switch_to_displayed_app()
         new_contact_form.tap_done()
-        self.wait_for_condition(lambda m: len(contacts_app.contacts) == 1)
+        self.wait_for_condition(lambda m: len(self.contacts_app.contacts) >= 1)
 
-        contact_details = contacts_app.contacts[0].tap()
+        contact_details = self.contacts_app.contacts[0].tap()
         output_text = contact_details.comments
 
         self.assertEqual(self._string[:14] + ' ' + self._string[15:] + 'Æ'.decode("UTF-8"), output_text)
+
+    def tearDown(self):
+        GaiaMtbfTestCase.tearDown(self)
+        
