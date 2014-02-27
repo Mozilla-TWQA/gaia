@@ -17,8 +17,11 @@ class Calendar(Base):
     _hint_swipe_to_navigate_locator = (By.ID, 'hint-swipe-to-navigate')
     _add_event_button_locator = (By.XPATH, "//a[@href='/event/add/']")
 
+    _today_display_button_locator = (By.XPATH, "//a[@href='#today']")
+    _month_display_button_locator = (By.XPATH, "//a[@href='/month/']")
     _week_display_button_locator = (By.XPATH, "//a[@href='/week/']")
     _day_display_button_locator = (By.XPATH, "//a[@href='/day/']")
+    _month_view_locator = (By.ID, 'month-view')
     _day_view_locator = (By.ID, 'day-view')
     _week_view_locator = (By.ID, 'week-view')
 
@@ -43,6 +46,13 @@ class Calendar(Base):
         new_event.wait_for_panel_to_load()
         return new_event
 
+    def tap_today_display_button(self):
+        self.marionette.find_element(*self._today_display_button_locator).tap()
+
+    def tap_month_display_button(self):
+        self.marionette.find_element(*self._month_display_button_locator).tap()
+        self.wait_for_element_displayed(*self._month_view_locator)
+
     def tap_week_display_button(self):
         self.marionette.find_element(*self._week_display_button_locator).tap()
         self.wait_for_element_displayed(*self._week_view_locator)
@@ -51,13 +61,28 @@ class Calendar(Base):
         self.marionette.find_element(*self._day_display_button_locator).tap()
         self.wait_for_element_displayed(*self._day_view_locator)
 
-    def displayed_events_in_month_view(self, date_time):
-        return self.marionette.find_element(*self._get_events_locator_in_month_view(date_time)).text
+    def tap_first_event(self, events):
+        # events index base is from 1
+        if len(events) > 1:
+            events[1].tap()
+            from gaiatest.apps.calendar.regions.event import NewEvent
+            event = NewEvent(self.marionette)
+            event.wait_for_edit_button_to_load()
+            return event
 
-    def displayed_events_in_week_view(self, date_time):
+    # NOTICE : 
+    # The returned list contains elements as [all, 1st, 2nd, 3rd,....] 
+    # Please access the event from index 1.
+    def displayed_events_in_month_view(self, date_time): 
+        return self.marionette.find_elements(*self._get_events_locator_in_month_view(date_time))
+
+    def displayed_1st_event_text_in_month_view(self, date_time):
+        return self.marionette.find_element(*self._get_events_text_locator_in_month_view(date_time)).text
+
+    def displayed_1st_event_text_in_week_view(self, date_time):
         return self.marionette.find_element(*self._get_events_locator_in_week_view(date_time)).text
 
-    def displayed_events_in_day_view(self, date_time):
+    def displayed_1st_event_text_in_day_view(self, date_time):
         return self.marionette.find_element(*self._get_events_locator_in_day_view(date_time)).text
 
     def _get_events_locator_in_day_view(self, date_time):
@@ -69,7 +94,11 @@ class Calendar(Base):
     def _get_events_locator_in_month_view(self, date_time):
         time_slot = self._get_data_hour(date_time)
         return (By.CSS_SELECTOR,
-                '#event-list section.hour-%d div.events' % time_slot)
+                '#event-list section.hour-%d div' % time_slot)
+
+    def _get_events_text_locator_in_month_view(self, date_time):
+        events_locator = self._get_events_locator_in_month_view(date_time)
+        return (events_locator[0], events_locator[1] + '.events') 
 
     def _get_events_locator_in_week_view(self, date_time):
         time_slot = self._get_data_hour(date_time)

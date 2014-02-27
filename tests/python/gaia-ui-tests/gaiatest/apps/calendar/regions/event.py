@@ -12,9 +12,13 @@ class NewEvent(Calendar):
     _event_location_input_locator = (By.XPATH, "//input[@data-l10n-id='event-location']")
     _edit_event_button_locator = (By.CSS_SELECTOR, 'button.edit')
     _save_event_button_locator = (By.CSS_SELECTOR, 'button.save')
+    _delete_event_button_locator = (By.CLASS_NAME, 'delete')
 
     def wait_for_panel_to_load(self):
         self.wait_for_element_displayed(*self._event_title_input_locator)
+
+    def wait_for_edit_button_to_load(self):
+        self.wait_for_element_displayed(*self._edit_event_button_locator)
 
     def fill_event_title(self, title):
         event_title_input = self.marionette.find_element(*self._event_title_input_locator)
@@ -29,3 +33,12 @@ class NewEvent(Calendar):
     def tap_save_event(self):
         self.marionette.find_element(*self._save_event_button_locator).tap()
         self.wait_for_element_not_displayed(*self._save_event_button_locator)
+
+    def tap_edit_event(self):
+        self.marionette.find_element(*self._edit_event_button_locator).tap()
+        self.wait_for_element_not_displayed(*self._edit_event_button_locator)
+
+    def tap_delete_event(self):
+        self.marionette.find_element(*self._delete_event_button_locator).tap()
+        self.wait_for_element_not_displayed(*self._delete_event_button_locator)
+
