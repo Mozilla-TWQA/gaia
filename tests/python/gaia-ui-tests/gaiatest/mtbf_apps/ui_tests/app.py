@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from marionette.by import By
 from gaiatest.apps.base import Base
 from gaiatest.apps.ui_tests.app import UiTests
 import time
 
 class MTBF_UiTests(Base):
-    _header_text_locator = (By.CSS_SELECTOR, '#root > header > h1')
     _icon_back_sign_locator = (By.CSS_SELECTOR, 'span.icon-back')
     _icon_cancel_locator = (By.CSS_SELECTOR, 'span.icon-close')
     _icon_back_locator = (By.ID, 'test-panel-back')
