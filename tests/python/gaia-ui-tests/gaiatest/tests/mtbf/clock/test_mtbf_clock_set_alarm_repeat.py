@@ -55,6 +55,5 @@ class TestClockSetAlarmRepeat(GaiaMtbfTestCase):
         edit_alarm.tap_done()
         self.clock.wait_for_banner_not_visible()
 
-    def tearDwon(self):
-	time.sleep(5)
+    def tearDown(self):
 	MtbfTestCase.tearDown(self)
