@@ -159,7 +159,3 @@ class InstalledApp(PageRegion):
 
             from gaiatest.apps.homescreen.regions.confirm_dialog import ConfirmDialog
             return ConfirmDialog(self.marionette)
-
-
-
-
