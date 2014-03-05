@@ -41,6 +41,4 @@ class TestClockAddAlarmMultipleTimes(GaiaMtbfTestCase):
             self.assertEqual(orig_total_alarms + 1, len(self.clock.alarms))
 
     def teatDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
-
