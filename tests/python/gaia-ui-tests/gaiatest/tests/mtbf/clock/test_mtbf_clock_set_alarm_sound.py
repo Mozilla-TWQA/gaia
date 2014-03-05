@@ -44,5 +44,4 @@ class TestClockSetAlarmSound(GaiaMtbfTestCase):
         self.clock.wait_for_banner_not_visible()
 
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
