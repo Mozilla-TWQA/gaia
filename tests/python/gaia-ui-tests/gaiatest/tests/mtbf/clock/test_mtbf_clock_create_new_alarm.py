@@ -51,6 +51,5 @@ class TestClockCreateNewAlarm(GaiaMtbfTestCase):
         self.assertEqual(alarms[0].label, alarm_label_text)
 
     def tearDown(self):
-        time.sleep(5)
         GaiaMtbfTestCase.tearDown(self)
 
