@@ -39,6 +39,5 @@ class TestClockDeleteAlarm(GaiaMtbfTestCase):
 
         self.assertEqual(len(self.clock.alarms), initial_alarms_count - 1, "delete alarm failed.")
 
-    def tearDwon(self):
-	time.sleep(5)
+    def tearDown(self):
 	GaiaMtbfTestCase.teadDown(Self)
