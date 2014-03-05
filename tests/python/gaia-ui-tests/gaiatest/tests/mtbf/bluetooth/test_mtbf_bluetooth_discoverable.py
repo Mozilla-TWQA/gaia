@@ -59,6 +59,5 @@ class TestBluetoothDiscoverable(GaiaMtbfTestCase):
         self.assertFalse(self.data_layer.bluetooth_is_enabled)
 
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
 
