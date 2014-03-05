@@ -40,6 +40,5 @@ class TestSetupManualEmail(GaiaMtbfTestCase):
         self.assertGreater(len(self.email.mails), 0)
 
     def tearDown(self):
-	time.sleep(5)
 	self.email.delete_top_email_account()
 	GaiaMtbfTestCase.tearDown(self)
