@@ -32,5 +32,4 @@ class TestEverythingMeSearchPanel(GaiaMtbfTestCase):
         self.assertEqual(self.apps.displayed_app.name.lower(), app_name.lower())
 
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
