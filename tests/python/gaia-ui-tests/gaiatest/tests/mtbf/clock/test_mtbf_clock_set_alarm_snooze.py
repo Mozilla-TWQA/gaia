@@ -47,5 +47,4 @@ class TestClockSetAlarmSnooze(GaiaMtbfTestCase):
 
 
     def tearDown(self):
-        time.sleep(5)
         GaiaMtbfTestCase.tearDown(self)
