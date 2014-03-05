@@ -38,5 +38,4 @@ class TestEverythingMeInstallApp(GaiaMtbfTestCase):
 	self.assertTrue(homescreen.is_app_installed(app_name),
                        	'The app %s was not found to be installed on the home screen.' % app_name)
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
