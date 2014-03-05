@@ -32,6 +32,5 @@ class TestEverythingMeAddCollection(GaiaMtbfTestCase):
 	installedapp.tap_delete_collections()
 
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
 
