@@ -42,6 +42,5 @@ class TestClockTurnOnOffAlarm(GaiaMtbfTestCase):
         self.assertTrue(origin_alarm_checked != alarm.is_alarm_active, 'user should be able to turn off the alarm.')
 
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self) 
 
