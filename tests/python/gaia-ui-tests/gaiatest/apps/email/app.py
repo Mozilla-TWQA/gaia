@@ -97,7 +97,6 @@ class Email(Base):
 	delete_confirmation_MTBF = account_settings_MTBF.tap_delete()
         delete_confirmation_MTBF.tap_delete()
 	
-	
     def tap_manual_setup(self):
         self.wait_for_element_displayed(*self._manual_setup_locator)
         self.marionette.find_element(*self._manual_setup_locator).tap()
