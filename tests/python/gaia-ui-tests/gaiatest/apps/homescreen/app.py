@@ -151,7 +151,6 @@ class InstalledApp(PageRegion):
             from gaiatest.apps.homescreen.regions.confirm_dialog import ConfirmDialog
             return ConfirmDialog(self.marionette)
 
-
         def tap_delete_collections(self):
             """Tap on (x) to delete app"""
             delete_collections_locator = (self._collection_locator[0], self._collection_locator[1] % self.name)
