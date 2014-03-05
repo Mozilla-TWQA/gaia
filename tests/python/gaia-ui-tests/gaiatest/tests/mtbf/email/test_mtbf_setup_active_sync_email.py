@@ -41,6 +41,5 @@ class TestSetupActiveSync(GaiaMtbfTestCase):
         self.email.wait_for_emails_to_sync()
 
     def tearDown(self):
-	time.sleep(5)
 	self.email.delete_top_email_account()
 	GaiaMtbfTestCase.tearDown(self)
