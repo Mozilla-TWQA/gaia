@@ -31,6 +31,5 @@ class TestEverythingMeSearchAccented(GaiaMtbfTestCase):
 
         self.assertGreater(len(search_panel.results), 0)
 
-    def tearDwon(self):
-	time.sleep(5)
+    def tearDown(self):
 	GaiaMtbfTestCase.tearDown(self)
