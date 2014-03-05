@@ -35,5 +35,4 @@ class TestClockSwitchClockType(GaiaMtbfTestCase):
         self.assertTrue(self.clock.is_day_and_date_displayed, "The date of digital clock should be displayed.")
    
     def tearDown(self):
-	time.sleep(5)
 	GaiaMtbfTestCase.tearDown(self)
