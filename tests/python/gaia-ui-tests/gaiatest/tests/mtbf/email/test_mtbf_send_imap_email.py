@@ -60,7 +60,5 @@ class TestSendIMAPEmail(GaiaMtbfTestCase):
 
 
     def tearDown(self):
-	time.sleep(5)
 	self.mtbf_ui_tests.back_to_main_screen()	
 	GaiaMtbfTestCase.tearDown(self)
-
