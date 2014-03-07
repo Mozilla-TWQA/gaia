@@ -20,7 +20,7 @@ class TestCalendar(GaiaMtbfTestCase):
 
         # We get the actual time of the device
         _seconds_since_epoch = self.marionette.execute_script("return Date.now();")
-        now = datetime.utcfromtimestamp(_seconds_since_epoch / 1000)
+        now = datetime.fromtimestamp(_seconds_since_epoch / 1000)
 
         # We know that the default event time will be rounded up 1 hour
         event_start_date_time = now + timedelta(hours=1)

@@ -92,9 +92,10 @@ class Calendar(Base):
                 "#day-view section.active[data-date*='%s'] section.hour-%d" % (data_date, time_slot))
 
     def _get_events_locator_in_month_view(self, date_time):
-        time_slot = self._get_data_hour(date_time)
-        return (By.CSS_SELECTOR,
-                '#event-list section.hour-%d div' % time_slot)
+        #time_slot = self._get_data_hour(date_time)
+        #return (By.CSS_SELECTOR,
+        #        '#event-list section.hour-%d div' % time_slot)
+        return (By.CSS_SELECTOR, '#event-list section.hour div')
 
     def _get_events_text_locator_in_month_view(self, date_time):
         events_locator = self._get_events_locator_in_month_view(date_time)
