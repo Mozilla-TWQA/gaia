@@ -11,13 +11,15 @@ class TestSettingsDoNotTrack(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
 
         # make sure Do Not Track is off for the beginning of the test
         self.data_layer.set_setting('privacy.donottrackheader.enabled', False)
-        self.settings = Settings(self.marionette)
 
     def test_enable_do_not_track_via_settings_app(self):
         """Enable do not track via the Settings app"""
@@ -27,26 +29,26 @@ class TestSettingsDoNotTrack(GaiaMtbfTestCase):
         # turn to "disallow tracking"
         do_not_track_settings.tap_disallow_tracking()
 
-        # should be enabled
-        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), True)
         # should be 1
         self.assertEqual(self.data_layer.get_int_pref('privacy.donottrackheader.value'), 1)
+        # should be enabled
+        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), True)
 
         # turn to "allow tracking"
         do_not_track_settings.tap_allow_tracking()
 
-        # should be enabled
-        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), True)
         # should be 0
         self.assertEqual(self.data_layer.get_int_pref('privacy.donottrackheader.value'), 0)
+        # should be enabled
+        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), True)
 
         # turn back to "no pref"
         do_not_track_settings.tap_do_not_have_pref_on_tracking()
 
-        # should be disabled
-        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), False)
         # should be back to "no pref"
         self.assertEqual(self.data_layer.get_int_pref('privacy.donottrackheader.value'), -1)
+        # should be disabled
+        self.assertEqual(self.data_layer.get_bool_pref('privacy.donottrackheader.enabled'), False)
 
     def tearDown(self):
         GaiaMtbfTestCase.tearDown(self)

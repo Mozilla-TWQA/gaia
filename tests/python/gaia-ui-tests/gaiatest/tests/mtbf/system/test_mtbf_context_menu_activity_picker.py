@@ -11,12 +11,13 @@ from gaiatest.mtbf_apps.ui_tests.app import MTBF_UiTests
 class TestContextMenuActivityPicker(GaiaMtbfTestCase):
 
     def setUp(self):
-        time.sleep(5)
         GaiaMtbfTestCase.setUp(self)
 
         self.ui_tests = UiTests(self.marionette)
+        self.ui_tests.launch()
+
         self.mtbf_ui_tests = MTBF_UiTests(self.marionette)
-        self.app_id = self.launch_by_touch("UI tests")
+        self.mtbf_ui_tests.back_to_main_screen()
 
     def test_context_menu_activity_picker(self):
         self.ui_tests.tap_ui_button()
@@ -34,7 +35,4 @@ class TestContextMenuActivityPicker(GaiaMtbfTestCase):
         self.assertFalse(activities_list.is_menu_visible)
 
     def tearDown(self):
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.app_id)
-        self.mtbf_ui_tests.back_to_main_screen()
         GaiaMtbfTestCase.tearDown(self)

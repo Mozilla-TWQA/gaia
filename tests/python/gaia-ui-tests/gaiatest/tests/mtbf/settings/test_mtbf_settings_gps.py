@@ -12,13 +12,15 @@ class TestSettingsGPS(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
 
         # make sure GPS is on for the beginning of the test
         self.data_layer.set_setting('geolocation.enabled', 'true')
-        self.settings = Settings(self.marionette)
 
     def test_enable_gps_via_settings_app(self):
         """ Enable GPS via the Settings app

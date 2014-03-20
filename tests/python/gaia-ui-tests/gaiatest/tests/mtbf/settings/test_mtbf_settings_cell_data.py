@@ -11,10 +11,12 @@ class TestSettingsCellData(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
-        self.settings = Settings(self.marionette)
 
     def test_enable_cell_data_via_settings_app(self):
         """ Enable cell data via the Settings app
@@ -48,7 +50,4 @@ class TestSettingsCellData(GaiaMtbfTestCase):
                                 message="Cell data was not connected via Settings app")
 
     def tearDown(self):
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.app_id)
-        self.mtbf_settings.back_to_main_screen()
         GaiaMtbfTestCase.tearDown(self)

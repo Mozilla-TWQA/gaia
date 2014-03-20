@@ -14,10 +14,12 @@ class TestSettingsPasscode(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
-        self.settings = Settings(self.marionette)
 
     def test_set_passcode_by_settings(self):
         """ Set a passcode using Settings app

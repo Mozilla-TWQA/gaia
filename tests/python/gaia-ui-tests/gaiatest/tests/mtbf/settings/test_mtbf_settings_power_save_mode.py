@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import time
+
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.mtbf_apps.settings.app import MTBF_Settings
 from gaiatest.apps.settings.app import Settings
@@ -18,7 +20,8 @@ class TestPowerSaveMode(GaiaMtbfTestCase):
         self.data_layer.set_setting('bluetooth.enabled', 'true')
 
         self.settings = Settings(self.marionette)
-        self.app_id = self.launch_by_touch("Settings")
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
 
@@ -27,11 +30,14 @@ class TestPowerSaveMode(GaiaMtbfTestCase):
         battery_settings = self.settings.open_battery_settings()
         battery_settings.toggle_power_save_mode()
 
+        # TODO Wait for everything to switch off
+        time.sleep(10)
+
         # Wait for Cell Data to be disabled.
         self.wait_for_condition(lambda m: not self.data_layer.is_cell_data_connected)
 
-        # Wait for Wi-Fi to be disabled.
-        self.wait_for_condition(lambda m: not self.data_layer.is_wifi_connected(self.testvars['wifi']))
+        # Check if Wi-Fi is disabled.
+        self.assertFalse(self.data_layer.is_wifi_connected(self.testvars['wifi']))
 
         # Check if Cell Data is disabled.
         self.assertFalse(self.data_layer.get_setting('ril.data.enabled'))

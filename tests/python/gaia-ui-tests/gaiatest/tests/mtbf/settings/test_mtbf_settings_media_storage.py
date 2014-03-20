@@ -11,10 +11,11 @@ class TestSettingsMediaStorage(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
-        self.settings = Settings(self.marionette)
 
     def test_settings_media_storage(self):
         media_storage_settings = self.settings.open_media_storage_settings()

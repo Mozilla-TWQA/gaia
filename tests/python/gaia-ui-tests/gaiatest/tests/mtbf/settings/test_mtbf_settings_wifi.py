@@ -11,11 +11,14 @@ class TestSettingsWifi(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.app_id = self.launch_by_touch("Settings")
+
+        self.settings = Settings(self.marionette)
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
+
         self.data_layer.disable_wifi()
-        self.settings = Settings(self.marionette)
 
     def test_connect_to_wifi_via_settings_app(self):
         """ Connect to a wifi network via the Settings app
@@ -23,8 +26,6 @@ class TestSettingsWifi(GaiaMtbfTestCase):
         https://github.com/mozilla/gaia-ui-tests/issues/342
 
         """
-        self.marionette.switch_to_frame()
-        self.marionette.switch_to_frame(self.app_id)
         self.wait_for_condition(lambda m: m.find_element('id', 'wifi-desc').text != '')
         wifi_settings = self.settings.open_wifi_settings()
 

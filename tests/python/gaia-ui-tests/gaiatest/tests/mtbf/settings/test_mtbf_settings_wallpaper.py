@@ -11,12 +11,15 @@ from gaiatest.apps.settings.app import Settings
 class TestWallpaper(GaiaMtbfTestCase):
 
     # default wallpaper
-    _default_wallpaper_src = None
+    _default_wallpaper_settings = None
+    _new_wallpaper_settings = None
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
+
         self.settings = Settings(self.marionette)
-        self.app_id = self.launch_by_touch("Settings")
+        self.settings.launch()
+
         self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
 
@@ -25,11 +28,20 @@ class TestWallpaper(GaiaMtbfTestCase):
 
         display_settings = self.settings.open_display_settings()
 
-        self._default_wallpaper_src = display_settings.wallpaper_preview_src
+        self._default_wallpaper_settings = self.data_layer.get_setting('wallpaper.image')
 
-        display_settings.choose_wallpaper(3)
+        # Open activities menu
+        activities_menu = display_settings.pick_wallpaper()
 
-        self.assertNotEqual(display_settings.wallpaper_preview_src[0:24], self._default_wallpaper_src[0:24])
+        # choose the source as wallpaper app
+        wallpaper = activities_menu.tap_wallpaper()
+        wallpaper.tap_wallpaper_by_index(3)
+
+        self.apps.switch_to_displayed_app()
+
+        self._new_wallpaper_settings = self.data_layer.get_setting('wallpaper.image')
+
+        self.assertNotEqual(self._default_wallpaper_settings, self._new_wallpaper_settings)
 
     def tearDown(self):
         GaiaMtbfTestCase.tearDown(self)

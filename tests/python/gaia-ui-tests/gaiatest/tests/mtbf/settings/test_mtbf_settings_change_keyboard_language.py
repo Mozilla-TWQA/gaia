@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from marionette.by import By
-import time
 from MtbfTestCase import GaiaMtbfTestCase
 from gaiatest.mtbf_apps.settings.app import MTBF_Settings
 from gaiatest.apps.settings.app import Settings
@@ -18,9 +17,11 @@ class TestChangeKeyboardLanguage(GaiaMtbfTestCase):
 
     def setUp(self):
         GaiaMtbfTestCase.setUp(self)
-        self.mtbf_settings = MTBF_Settings(self.marionette)
+
         self.settings = Settings(self.marionette)
-        self.app_id = self.launch_by_touch("Settings")
+        self.settings.launch()
+
+        self.mtbf_settings = MTBF_Settings(self.marionette)
         self.mtbf_settings.back_to_main_screen()
 
     def test_change_keyboard_language_settings(self):
