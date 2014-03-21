@@ -81,14 +81,22 @@ class Email(Base):
         self.wait_for_header_area()
 
     def delete_email_account(self, index):
-
         toolbar = self.header.tap_menu()
         toolbar.tap_settings()
         settings = Settings(self.marionette)
         account_settings = settings.email_accounts[index].tap()
-        delete_confirmation = account_settings.tap_delete()
+	delete_confirmation = account_settings.tap_delete()
         delete_confirmation.tap_delete()
 
+    # This is only for MTBF delete mail account used
+    def delete_top_email_account(self):
+        toolbar_MTBF = self.header.tap_menu()
+        toolbar_MTBF.tap_settings()
+        settings_MTBF = Settings(self.marionette)
+        account_settings_MTBF = settings_MTBF.email_accounts[0].tap()
+	delete_confirmation_MTBF = account_settings_MTBF.tap_delete()
+        delete_confirmation_MTBF.tap_delete()
+	
     def tap_manual_setup(self):
         self.wait_for_element_displayed(*self._manual_setup_locator)
         self.marionette.find_element(*self._manual_setup_locator).tap()
