@@ -22,7 +22,6 @@ class TestCardsViewTwoApps(GaiaMtbfTestCase):
         # https://moztrap.mozilla.org/manage/case/1917/
 
         # Switch to top level frame before dispatching the event
-        import pdb;pdb.set_trace()
         self.marionette.switch_to_frame()
 
         # Pull up the cards view
