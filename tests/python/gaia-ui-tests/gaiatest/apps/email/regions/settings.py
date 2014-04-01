@@ -17,7 +17,7 @@ class Settings(Base):
 
     @property
     def email_accounts(self):
-        return [self.Account(self.marionette, email_account) for email_account in self.marionette.find_elements(*self._email_account_locator)]
+	return [self.Account(self.marionette, email_account) for email_account in self.marionette.find_elements(*self._email_account_locator)]
 
     class Account(PageRegion):
         _name_locator = (By.CSS_SELECTOR, 'a.tng-account-item-label')
