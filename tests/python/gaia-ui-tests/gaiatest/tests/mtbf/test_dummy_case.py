@@ -7,9 +7,6 @@ import time
 from MtbfTestCase import GaiaMtbfTestCase
 
 class DummyTestCase(GaiaMtbfTestCase):
-    def __init__(self, *args, **kwargs):
-        GaiaMtbfTestCase.__init__(self, *args, **kwargs)
-
     def setUp(self):
         pass
 
@@ -17,4 +14,4 @@ class DummyTestCase(GaiaMtbfTestCase):
         pass
 
     def test_wait_for_10_mins(self):
-        time.sleep(600)
+        time.sleep(300)
