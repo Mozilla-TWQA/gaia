@@ -15,3 +15,4 @@ class DummyTestCase(GaiaMtbfTestCase):
 
     def test_wait_for_10_mins(self):
         time.sleep(300)
+        self.assertEqual(1,1)
