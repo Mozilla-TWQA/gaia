@@ -16,16 +16,5 @@ class DummyTestCase(GaiaMtbfTestCase):
     def TearDown(self):
         pass
 
-    def
-
-
-class GaiaMtbfTestCase(GaiaTestCase):
-
-    def __init__(self, *args, **kwargs):
-        GaiaTestCase.__init__(self, *args, **kwargs)
-
-    def setUp(self):
-        GaiaTestCase.setUp(self)
-
     def test_wait_for_10_mins(self):
         time.sleep(600)
