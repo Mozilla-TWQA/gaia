@@ -9,3 +9,6 @@ import time
 class MTBF_Phone(Base):
     def __init__(self, marionette):
         Base.__init__(self, marionette)
+
+    def general_tear_down(self):
+        self.phone.tap_keypad_toolbar_button()
